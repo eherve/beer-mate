@@ -1,0 +1,36 @@
+beermate=. CD=. {
+ app.js
+ Gruntfile.js
+ package.json
+ router.js
+ passport.js
+ config=config {
+  application.json
+  routes.json
+ }
+ routes=routes {
+  auth.js
+  error.js
+  users.js
+ }
+ public=public {
+  images=images {
+  }
+  javascripts=javascripts {
+  }
+  stylesheets=stylesheets {
+   style.css
+  }
+ }
+ views=views {
+  error.jade
+  index.jade
+  layout.jade
+ }
+ bin=bin {
+  www
+ }
+ data=data {
+  users.json
+ }
+}

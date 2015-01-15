@@ -1,0 +1,10 @@
+{
+  "port": 4242,
+  "session": {
+    "name": "beermate-cookie",
+    "secret": "secret",
+    "resave": true, "saveUninitialized": true,
+    "rolling": true,
+    "idleAge": 20000, "maxAge": null, "cleanupCycle": 60000
+  }
+}

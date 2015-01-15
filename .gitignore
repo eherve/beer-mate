@@ -1,0 +1,53 @@
+######################
+# Ignore node module #
+######################
+node_modules
+npm-debug.log
+
+#######################
+# Ignore bower module #
+#######################
+
+
+##########################
+# Ignore some extentions #
+##########################
+*.~
+*.swo
+*.swp
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
+#################
+# Ignore config #
+#################
+config/*.json
+
+###############
+# Ignore logs #
+###############
+logs
+
+###############
+# Ignore Temp #
+###############
+temp
+tmp
+
+###############
+# Ignore Tags #
+###############
+.tags
+.tags-*
+.ctags
+.ctags-*
+
+lib-cov
+pids
+dist
+
