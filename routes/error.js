@@ -13,10 +13,7 @@ router.use(function(req, res, next) {
 router.use(function(err, req, res) {
   console.error(err);
   res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: {}
-  });
+  res.send(process.env.DEBUG ? err.message : null);
 });
 
 module.exports = router;

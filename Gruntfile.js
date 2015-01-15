@@ -62,41 +62,19 @@ module.exports = function(grunt) {
       }
     },
 
-    // Demon
-    nodemon: {
-      debug: {
-        script: 'bin/www',
-        options: {
-          nodeArgs: [ '--debug-brk' ],
-          env: {
-            PORT: '<%=port%>'
-          },
-          callback: function (nodemon) {
-            nodemon.on('log', function(event) {
-              console.log(event.colour);
-            });
-
-            // opens browser on initial server start
-            nodemon.on('config:update', function () {
-              setTimeout(function () {
-                require('open')('http://localhost:<%=port%>/debug?port=<%=dport%>');
-              }, 500);
-            });
-          }
-        }
-      }
-    },
-
     // Server Express
     express: {
       options: {
-        port: '<%=port%>'
+        script: 'bin/www', port: '<%=port%>',
+        debug: false
       },
       dev: {
         options: {
-          script: 'bin/www',
           debug: true
         }
+      },
+      prod: {
+        options: {}
       }
     }
 
@@ -107,11 +85,13 @@ module.exports = function(grunt) {
     'jshint'
   ]);
 
-  grunt.registerTask('serve', [
+  grunt.registerTask('debug', [
     'newer:jshint',
     'express:dev',
     'watch'
   ]);
+
+  grunt.registerTask('serve', [ 'express:prod' ]);
 
   grunt.registerTask('wait', function () {
     // Used for delaying livereload until after server has restarted

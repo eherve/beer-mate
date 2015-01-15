@@ -1,12 +1,13 @@
 beermate=. CD=. {
- app.js
  Gruntfile.js
+ README.md
+ app.js
  package.json
- router.js
  passport.js
+ router.js
  config=config {
   application.json
-  routes.json
+  application.json.sample
  }
  routes=routes {
   auth.js

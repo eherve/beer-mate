@@ -8,4 +8,4 @@ module.exports = function(app) {
   app.use('/auth', auth);
   app.use('/api/users', users);
   app.use(error);
-}
+};

@@ -9,8 +9,10 @@ var USER_FILE = path.join(__dirname, '../data/users.json');
 var users = require(USER_FILE);
 
 router.all('/*', function(req, res, next) {
-  if (req.user != null) { return next(); }
-  res.send(401);
+  if (req.user) { return next(); }
+  var err = new Error('Unauthorized');
+  err.status = 401;
+  next(err);
 });
 
 router.get('/', function(req, res) {
