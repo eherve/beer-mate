@@ -1,5 +1,17 @@
 'use strict';
 
+var RELOAD_WAITING_TIMEOUT = 1500;
+var FILES = {
+  jshint: {
+    all: [ '*.js', 'routes/{,*/}*.js', 'public/{,*/}*.js', 'bin/www' ],
+    server: [ '*.js', 'routes/{,*/}*.js', 'bin/www' ]
+  },
+  watch: {
+    all: [ '*.js', 'config/*.{json}', 'routes/{,*/}*.js', 'public/{,*/}*.js', 'bin/www' ],
+    server: [ '*.js', 'config/{,*/}*.json', 'routes/{,*/}*.js', 'bin/www' ]
+  }
+};
+
 module.exports = function(grunt) {
 
   // Load grunt tasks automatically
@@ -15,24 +27,14 @@ module.exports = function(grunt) {
 
     // Watches files for changes and runs tasks based on the changed files
     watch: {
-      js: {
-        files: [
-          '*.js',
-          'config/*.{json}',
-          'routes/{,*/}*.js',
-          'bin/www'
-        ],
+      all: {
+        files: FILES.watch.all,
         tasks: [ 'newer:jshint:all' ],
         options: { }
       },
-      express: {
-        files: [
-          '*.js',
-          'config/{,*/}*.json',
-          'routes/{,*/}*.js',
-          'bin/www'
-        ],
-        tasks: ['express:dev', 'wait'],
+      server: {
+        files: FILES.watch.server,
+        tasks: [ 'express:dev', 'wait', 'newer:jshint:server' ],
         options: {
           livereload: true,
           nospawn: true // Without this option specified express won't be reloaded
@@ -43,15 +45,15 @@ module.exports = function(grunt) {
     // Make sure code styles are up to par and there are no obvious mistakes
     jshint: {
       options: {
+
         jshintrc: '.jshintrc',
         reporter: require('jshint-stylish')
       },
       all: {
-        src: [
-          '*.js',
-          'routes/{,*/}*.js',
-          'bin/www'
-        ]
+        src: FILES.jshint.all
+      },
+      server: {
+        src: FILES.jshint.server
       }
     },
 
@@ -66,8 +68,9 @@ module.exports = function(grunt) {
     express: {
       options: {
         script: 'bin/www', port: '<%=port%>',
-        debug: false
+        output: '.+', debug: false
       },
+
       dev: {
         options: {
           debug: true
@@ -80,26 +83,41 @@ module.exports = function(grunt) {
 
   });
 
+  // Utils tasks
+  grunt.registerTask('wait',
+    'Delaying livereload until after server has restarted',
+    function () {
+      // Used for delaying livereload until after server has restarted
+      grunt.log.ok('Waiting for server reload...');
+      var done = this.async();
+      setTimeout(function () {
+        grunt.log.writeln('Done waiting!');
+        done();
+      }, RELOAD_WAITING_TIMEOUT);
+    }
+  );
+
+
+  grunt.registerTask('express-keepalive',
+    'Keep grunt running',
+    function () {
+      this.async();
+    }
+  );
+
   // Tasks
   grunt.registerTask('default', [
-    'jshint'
+    'jshint:all'
   ]);
 
   grunt.registerTask('debug', [
-    'newer:jshint',
     'express:dev',
-    'watch'
+    'watch:server'
   ]);
 
-  grunt.registerTask('serve', [ 'express:prod' ]);
+  grunt.registerTask('serve', [
+    'express:prod',
+    'express-keepalive'
+  ]);
 
-  grunt.registerTask('wait', function () {
-    // Used for delaying livereload until after server has restarted
-    grunt.log.ok('Waiting for server reload...');
-    var done = this.async();
-    setTimeout(function () {
-      grunt.log.writeln('Done waiting!');
-      done();
-    }, 1500);
-  });
 };
