@@ -68,7 +68,7 @@ module.exports = function(grunt) {
     express: {
       options: {
         script: 'bin/www', port: '<%=port%>',
-        output: '.+', debug: false
+        output: 'Express server listening on port [0-9]+.*', debug: false
       },
 
       dev: {

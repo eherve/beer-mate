@@ -2,10 +2,17 @@
 
 'use strict';
 
-var app = require('../app');
+var database = require('../database');
+var databaseConfig = require('../config/database.json');
 
-app.set('port', process.env.PORT || 9000);
-
-var server = app.listen(app.get('port'), function() {
-  console.log('Express server listening on port ' + server.address().port);
+database.connect(databaseConfig, function(err, connection) {
+  if (err) { return console.error(err); }
+  database.loadModels(connection, function(err) {
+    if (err) { return console.error(err); }
+    var app = require('../app');
+    app.set('port', process.env.PORT || 9000);
+    var server = app.listen(app.get('port'), function() {
+      console.log('Express server listening on port ' + server.address().port);
+    });
+  });
 });

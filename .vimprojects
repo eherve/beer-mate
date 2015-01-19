@@ -2,17 +2,24 @@ beermate=. CD=. {
  Gruntfile.js
  README.md
  app.js
+ database.js
  package.json
  passport.js
  router.js
  config=config {
   application.json
   application.json.sample
+  database.json
  }
  routes=routes {
   auth.js
   error.js
   users.js
+  pubs.js
+ }
+ models=models {
+  pub.js
+  user.js
  }
  public=public {
   images=images {
