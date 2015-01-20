@@ -1,0 +1,12 @@
+{
+  "host": "localhost",
+  "database": "beermate",
+  "port": 27017,
+  "options": {
+    "server": {
+      "socketOptions": { "keepAlive": 1 },
+      "auto_reconnect": true,
+      "poolSize": 2
+    }
+  }
+}
