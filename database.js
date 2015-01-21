@@ -9,37 +9,30 @@ module.exports.connect = function(config, cb) {
   var host = config.host;
 	var dbname = config.database;
   var port = config.port;
-  var connection = mongoose.createConnection(host, dbname, port,	config.options);
-  // process.onStop(mongoose.connection.close.bind(connection));
-  connection.once('error', cb);
-  connection.once('open', function(err) {
+  var db = mongoose.createConnection(host, dbname, port, config.options);
+  // process.onStop(mongoose.db.close.bind(db));
+  db.once('error', cb);
+  db.once('open', function() {
     console.log('Database connected');
     this.removeListener('error', cb);
-    connection.on('error', function(err) {
+    db.on('error', function(err) {
       console.error(util.format('%s:%s/%s %s',
         this.host, this.port, this.name, err));
     });
-    cb(err, connection);
+    cb(null, db);
   });
 };
 
-module.exports.loadModels = function(connection, cb) {
+module.exports.loadModels = function(db, cb) {
   fs.readdir(path.join(__dirname, 'models'), function(err, models) {
     if (err) { return cb(err); }
-    (function run(index) {
-      if (index >= models.length) {
-        console.log('Models loaded');
-        return cb();
-      }
+    for (var index = 0; index < models.length; ++index) {
       var modelName = models[index];
-      if (/^.*.js$/.test(modelName)) {
-        console.log('Load model', modelName);
-        var model = require(path.join(__dirname, 'models', modelName));
-        model.register(connection, function(err) {
-          if (err) { return cb(err); }
-          run(++index);
-        });
-      } else { run(++index); }
-    })(0);
+      if (!/^.*.js$/.test(modelName)) { continue; }
+      console.log('Load model', modelName);
+      var model = require(path.join(__dirname, 'models', modelName));
+      model.register(db);
+    }
+    cb();
   });
 };

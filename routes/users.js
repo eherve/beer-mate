@@ -2,14 +2,17 @@
 
 var express = require('express');
 var router = express.Router();
-var UserModel = require('mongoose').model('User');
+var NotFoundError = require('../errors/notFoundError');
+var UnauthorizedError = require('../errors/unauthorizedError');
+var ObjectId = require('mongoose').Types.ObjectId;
+var UserModel = require('../models/user');
 
+/*
 router.all('/*', function(req, res, next) {
   if (req.user) { return next(); }
-  var err = new Error('Unauthorized');
-  err.status = 401;
-  next(err);
+  next(UnauthorizedError);
 });
+*/
 
 router.get('/', function(req, res, next) {
   UserModel.find(function(err, users) {
@@ -27,12 +30,12 @@ router.post('/', function(req, res, next) {
 });
 
 router.get('/:userId', function(req, res, next) {
-  UserModel.findById(req.params.userId, function(err, user) {
+  var id = req.params.userId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  UserModel.findById(id, function(err, user) {
     if (err) { return next(err); }
     if (user) { return res.send(user); }
-    err = new Error('Not Found');
-    err.status = 404;
-    next(err);
+    next(new NotFoundError());
   });
 });
 

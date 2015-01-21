@@ -1,10 +1,6 @@
-var Schema = require('mongoose').Schema,
-    Model = require('mongoose').Model,
-    util = require('util'),
-    crypto = require('crypto'),
-    SALT_RANDOM_SIZE = 16,
-    HASH_ITERATION = 420,
-    HASH_LEN = 512;
+'use strict';
+
+var Schema = require('mongoose').Schema;
 
 var schema = new Schema({
   name: { type: String },
@@ -26,8 +22,7 @@ var schema = new Schema({
  * Register
  */
 
-module.exports.register = function(connection, cb) {
-  var model = connection.model('Pub', schema);
-  cb(null, 'Pub');
-}
+module.exports.register = function(db) {
+  module.exports = db.model('Pub', schema);
+};
 

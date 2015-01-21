@@ -5,12 +5,13 @@
 var database = require('../database');
 var databaseConfig = require('../config/database.json');
 
-database.connect(databaseConfig, function(err, connection) {
+database.connect(databaseConfig, function(err, db) {
   if (err) { return console.error(err); }
-  database.loadModels(connection, function(err) {
+  database.loadModels(db, function(err) {
     if (err) { return console.error(err); }
     var app = require('../app');
-    app.set('port', process.env.PORT || 9000);
+    var appConfig = require('../config/application.json');
+    app.set('port', process.env.PORT || appConfig.port || 9000);
     var server = app.listen(app.get('port'), function() {
       console.log('Express server listening on port ' + server.address().port);
     });

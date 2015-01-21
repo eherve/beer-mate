@@ -3,12 +3,12 @@
 var RELOAD_WAITING_TIMEOUT = 1500;
 var FILES = {
   jshint: {
-    all: [ '*.js', 'routes/{,*/}*.js', 'public/{,*/}*.js', 'bin/www' ],
-    server: [ '*.js', 'routes/{,*/}*.js', 'bin/www' ]
+    all: [ '*.js', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'errors/{,*/}*.js', 'public/{,*/}*.js', 'bin/www' ],
+    server: [ '*.js', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'errors/{,*/}*.js', 'bin/www' ]
   },
   watch: {
-    all: [ '*.js', 'config/*.{json}', 'routes/{,*/}*.js', 'public/{,*/}*.js', 'bin/www' ],
-    server: [ '*.js', 'config/{,*/}*.json', 'routes/{,*/}*.js', 'bin/www' ]
+    all: [ '*.js', 'config/*.{json}', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'errors/{,*/}*.js', 'public/{,*/}*.js', 'bin/www' ],
+    server: [ '*.js', 'config/{,*/}*.json', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'errors/{,*/}*.js', 'bin/www' ]
   }
 };
 
