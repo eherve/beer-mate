@@ -20,6 +20,7 @@ beermate=. CD=. {
  models=models {
   pub.js
   user.js
+  parameters.js
  }
  public=public {
   images=images {
@@ -37,6 +38,9 @@ beermate=. CD=. {
  }
  bin=bin {
   www
+ }
+ upgrade=upgrade {
+  upgrade_201501211900.js
  }
  data=data {
   users.json
