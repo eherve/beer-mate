@@ -1,0 +1,8 @@
+{
+  "outputs": {
+    "console": {
+      "level": "debug", "colorize": true, "timestamp": true,
+      "dumpExceptions": true, "showStack": true
+    }
+  }
+}
