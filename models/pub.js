@@ -1,19 +1,15 @@
 'use strict';
 
-var DAYS = [ 'default', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' ];
 var Schema = require('mongoose').Schema;
 
-var daySchema = new Schema({
-  name: { type: String, enum: DAYS },
+var daySchema = {
   open: { type: Boolean },
-  startHour: { type: Number },
-  endHour: { type: Number },
-  price: { type: Number },
+  openH: { type: Number }, closeH: { type: Number },
+  priceH: { type: Number },
   happyHour: { type: Boolean },
-  startHourHH: { type: Number },
-  endHourHH: { type: Number },
+  openHH: { type: Number }, closeHH: { type: Number },
   priceHH: { type: Number }
-});
+};
 
 var schema = new Schema({
   name: { type: String },
@@ -24,7 +20,16 @@ var schema = new Schema({
     street: { type: String },
     loc: { type: [ Number ], index: '2dsphere' }
   },
-  open: [ daySchema ],
+  days: {
+    default: daySchema,
+    monday: daySchema,
+    tuesday: daySchema,
+    wednesday: daySchema,
+    thursday: daySchema,
+    friday: daySchema,
+    saturday: daySchema,
+    sunday: daySchema,
+  },
   currency: { type: String },
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   enabled: { type: Boolean },
@@ -32,11 +37,6 @@ var schema = new Schema({
   createdAt: { type: Date },
   updatedAt: { type: Date },
 });
-
-/*
- * Statics
- */
-schema.statics.DAYS = DAYS;
 
 /*
  * Register

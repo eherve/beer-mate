@@ -19,6 +19,7 @@ router.post('/', function(req, res, next) {
   var pub = new PubModel(req.body);
   pub.userId = req.user._id;
   pub.save(function(err) {
+    console.log(err);
     if (err) { return next(err); }
     res.end();
   });
