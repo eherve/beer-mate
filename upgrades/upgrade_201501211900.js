@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports.upgrade = function(cb) {
   var UserModel = require('../models/user');
   var user = new UserModel({

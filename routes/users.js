@@ -7,14 +7,12 @@ var UnauthorizedError = require('../errors/unauthorizedError');
 var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../models/user');
 
-/*
-router.all('/*', function(req, res, next) {
-  if (req.user) { return next(); }
-  next(UnauthorizedError);
-});
-*/
+function isAdministrator(req) {
+  return req.user && req.user.administrator === true;
+}
 
 router.get('/', function(req, res, next) {
+  if (!isAdministrator(req)) { return next(new UnauthorizedError()); }
   UserModel.find(function(err, users) {
     if (err) { return next(err); }
     res.send(users);
@@ -22,6 +20,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/', function(req, res, next) {
+  if (!isAdministrator(req)) { return next(new UnauthorizedError()); }
   var user = new UserModel(req.body);
   user.save(function(err) {
     if (err) { return next(err); }
@@ -30,6 +29,7 @@ router.post('/', function(req, res, next) {
 });
 
 router.get('/:userId', function(req, res, next) {
+  if (!isAdministrator(req)) { return next(new UnauthorizedError()); }
   var id = req.params.userId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   UserModel.findById(id, function(err, user) {

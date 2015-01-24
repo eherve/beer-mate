@@ -39,8 +39,13 @@ beermate=. CD=. {
  bin=bin {
   www
  }
- upgrade=upgrade {
+ upgrades=upgrades {
+  bars.json
   upgrade_201501211900.js
+  upgrade_201501241300.js
+  upgrade_201501241500=upgrade_201501241500 {
+    index.js
+  }
  }
  data=data {
   users.json

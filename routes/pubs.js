@@ -7,13 +7,6 @@ var UnauthorizedError = require('../errors/unauthorizedError');
 var ObjectId = require('mongoose').Types.ObjectId;
 var PubModel = require('../models/pub');
 
-/*
-router.all('/*', function(req, res, next) {
-  if (req.user) { return next(); }
-  next(UnauthorizedError);
-});
-*/
-
 router.get('/', function(req, res, next) {
   PubModel.find({}, function(err, pubs) {
     if (err) { return next(err); }
@@ -22,6 +15,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/', function(req, res, next) {
+  if (!req.user) { return next(new UnauthorizedError()); }
   var pub = new PubModel(req.body);
   pub.userId = req.user._id;
   pub.save(function(err) {

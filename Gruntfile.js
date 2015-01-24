@@ -3,12 +3,12 @@
 var RELOAD_WAITING_TIMEOUT = 1500;
 var FILES = {
   jshint: {
-    all: [ '*.js', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'errors/{,*/}*.js', 'public/{,*/}*.js', 'bin/www' ],
-    server: [ '*.js', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'errors/{,*/}*.js', 'bin/www' ]
+    all: [ '*.js', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'tools/{,*/}*.js', 'errors/{,*/}*.js', 'public/{,*/}*.js', 'bin/www', 'upgrades/{,*/}*.js' ],
+    server: [ '*.js', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'tools/{,*/}*.js', 'errors/{,*/}*.js', 'bin/www', 'upgrades/{,*/}*.js' ]
   },
   watch: {
-    all: [ '*.js', 'config/*.{json}', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'errors/{,*/}*.js', 'public/{,*/}*.js', 'bin/www' ],
-    server: [ '*.js', 'config/{,*/}*.json', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'errors/{,*/}*.js', 'bin/www' ]
+    all: [ '*.js', 'config/*.{json}', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'tools/{,*/}*.js', 'errors/{,*/}*.js', 'public/{,*/}*.js', 'bin/www', 'upgrades/{,*/}*.js' ],
+    server: [ '*.js', 'config/{,*/}*.json', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'tools/{,*/}*.js', 'errors/{,*/}*.js', 'bin/www', 'upgrades/{,*/}*.js' ]
   }
 };
 
@@ -45,7 +45,6 @@ module.exports = function(grunt) {
     // Make sure code styles are up to par and there are no obvious mistakes
     jshint: {
       options: {
-
         jshintrc: '.jshintrc',
         reporter: require('jshint-stylish')
       },
@@ -68,16 +67,14 @@ module.exports = function(grunt) {
     express: {
       options: {
         script: 'bin/www', port: '<%=port%>',
-        output: 'Express server listening on port [0-9]+.*', debug: false
+        output: '.*Express server listening on port [0-9]+.*', debug: false
       },
 
       dev: {
-        options: {
-          debug: true
-        }
+        options: { debug: true, 'node_env': 'development' }
       },
       prod: {
-        options: {}
+        options: { 'node_env': 'production' }
       }
     }
 

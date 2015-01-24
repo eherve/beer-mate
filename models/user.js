@@ -68,7 +68,6 @@ schema.statics.modifyPassword = function(id, oldPassword, newPassword, cb) {
 schema.statics.authenticate = function(email, password, cb) {
   this.findOne({ email: email }, '+password +salt administrator')
   .exec(function(err, user) {
-    console.log('findOne', err, user);
     if (err) { return cb(err); }
     if (!user) { return cb(); }
     user.comparePassword(password, function(err, valid) {

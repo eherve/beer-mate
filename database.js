@@ -4,11 +4,22 @@ var path = require('path');
 var fs = require('fs');
 var util = require('util');
 var mongoose = require('mongoose');
+var logger = require('./logger').get('Database');
 
 function upgradeSort(a, b) {
-  a = a.replace(/^.*_([0-9]+)\.js$/, '$1');
-  b = b.replace(/^.*_([0-9]+)\.js$/, '$1');
+  a = a.replace(/^.*_([0-9]+)(\.js$|$)/, '$1');
+  b = b.replace(/^.*_([0-9]+)(\.js$|$)/, '$1');
   return a > b ? 1 : -1;
+}
+
+function upgradeFilter(upgrades) {
+  for (var i = 0; i < upgrades.length; ++i) {
+    var upgrade = upgrades[i];
+    if (!/^.*_([0-9]+)(\.js$|$)/.test(upgrade)) {
+      upgrades.splice(i--, 1);
+    }
+  }
+  return upgrades;
 }
 
 function upgrade(cb) {
@@ -16,16 +27,16 @@ function upgrade(cb) {
   ParameterModel.findOne({ name: 'upgrade' }, function(err, param) {
     if (err) { return cb(err); }
     if (!param) { param = new ParameterModel({ name: 'upgrade' }); }
-    console.log('Database upgrade timestamp:', param.value);
+    logger.info('Database upgrade timestamp:', param.value);
     fs.readdir(path.join(__dirname, 'upgrades'), function(err, upgrades) {
       if (err) { return cb(err); }
-      upgrades.sort(upgradeSort);
+      upgradeFilter(upgrades).sort(upgradeSort);
       (function run(index) {
         if (index >= upgrades.length) { return param.save(cb); }
         var upgrade = upgrades[index];
-        var timestamp = upgrade.replace(/^.*_([0-9]+)\.js$/, '$1');
+        var timestamp = upgrade.replace(/^.*_([0-9]+)(\.js$|$)/, '$1');
         if (param.value && timestamp <= param.value) { return run(++index); }
-        console.log('Run upgrade:', upgrade);
+        logger.debug('Run upgrade:', upgrade);
         param.value = timestamp;
         upgrade = require(path.join(__dirname, 'upgrades', upgrade));
         upgrade.upgrade(function(err) {
@@ -43,7 +54,7 @@ function loadModels(db, cb) {
     for (var index = 0; index < models.length; ++index) {
       var modelName = models[index];
       if (!/^.*.js$/.test(modelName)) { continue; }
-      console.log('Load model', modelName);
+      logger.debug('Load model', modelName);
       var model = require(path.join(__dirname, 'models', modelName));
       model.register(db);
     }
@@ -58,7 +69,7 @@ module.exports.connect = function(config, cb) {
   var db = mongoose.createConnection(host, dbname, port, config.options);
   db.once('error', cb);
   db.once('open', function() {
-    console.log('Database connected');
+    logger.info('Database connected');
     this.removeListener('error', cb);
     db.on('error', function(err) {
       console.error(util.format('%s:%s/%s %s',
