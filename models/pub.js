@@ -2,12 +2,18 @@
 
 var Schema = require('mongoose').Schema;
 
+var hourMatch = [ /[0-9]{2}:[03]0/,
+  'Invalid hour format ({VALUE}) for {PATH}.'
+];
+
 var daySchema = {
   open: { type: Boolean },
-  openH: { type: Number }, closeH: { type: Number },
+  openH: { type: String, match: hourMatch },
+  closeH: { type: String, match: hourMatch },
   priceH: { type: Number },
   happyHour: { type: Boolean },
-  openHH: { type: Number }, closeHH: { type: Number },
+  openHH: { type: String, match: hourMatch },
+  closeHH: { type: String, match: hourMatch },
   priceHH: { type: Number }
 };
 

@@ -18,6 +18,7 @@ router.post('/', function(req, res, next) {
   if (!req.user) { return next(new UnauthorizedError()); }
   var pub = new PubModel(req.body);
   pub.userId = req.user._id;
+  pub.createdAt = Date.now();
   pub.save(function(err) {
     console.log(err);
     if (err) { return next(err); }
