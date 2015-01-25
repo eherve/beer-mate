@@ -6,6 +6,11 @@ var util = require('util');
 var mongoose = require('mongoose');
 var logger = require('./logger').get('Database');
 
+mongoose.set('debug', function (collectionName, method, query, doc, options) {
+  logger.debug(util.format('mongo collection: %s, method: %s, quey: %s',
+    collectionName, method, JSON.stringify(query)));
+});
+
 function upgradeSort(a, b) {
   a = a.replace(/^.*_([0-9]+)(\.js$|$)/, '$1');
   b = b.replace(/^.*_([0-9]+)(\.js$|$)/, '$1');

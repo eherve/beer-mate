@@ -7,8 +7,32 @@ var UnauthorizedError = require('../errors/unauthorizedError');
 var ObjectId = require('mongoose').Types.ObjectId;
 var PubModel = require('../models/pub');
 
+function addLocalizationFilter(filter, query) {
+  if (query.longitude === undefined ||
+  query.latitude === undefined) { return; }
+  filter['address.loc'] = {
+    $nearSphere: {
+      $geometry: {
+        type : 'Point', coordinates : [
+          parseFloat(query.longitude), parseFloat(query.latitude)
+        ]
+      }
+    }
+  };
+  if (query.maxDistance !== undefined) {
+    filter['address.loc'].$nearSphere.$maxDistance =
+      parseFloat(query.maxDistance);
+  }
+  if (query.minDistance !== undefined) {
+    filter['address.loc'].$nearSphere.$minDistance =
+      parseFloat(query.minDistance);
+  }
+}
+
 router.get('/', function(req, res, next) {
-  PubModel.find({}, function(err, pubs) {
+  var filter = {};
+  addLocalizationFilter(filter, req.query);
+  PubModel.find(filter, function(err, pubs) {
     if (err) { return next(err); }
     res.send(pubs);
   });

@@ -10,8 +10,16 @@ block content
     socket.on('data', function(data) {
       console.log(data);
       var div = document.getElementById('logging');
-      div.innerHTML = div.innerHTML + '<div>' +
-        new Date(data.time) + ' - ' + data.level + ': [' + data.logger + '] ' + data.msg +
-        '</div>';
+      div.innerHTML =
+        '<div class="row">' +
+        '<div>' + new Date(data.time) + '</div>' +
+        ' - ' +
+        '<div class="' + data.level + '">' + data.level + '</div>' +
+        ' : ' +
+        '<div>' + '[ ' + data.logger + ' ]' + '</div>' +
+        ' ' +
+        '<div>' +  data.msg + '</div>' +
+        '</div>' +
+        div.innerHTML;
     });
 
