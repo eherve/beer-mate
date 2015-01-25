@@ -1,0 +1,19 @@
+extends layout
+
+block head
+  link(rel='stylesheet', href='https://cdn.datatables.net/1.10.4/css/jquery.dataTables.min.css')
+
+block content
+  h1 Users
+  div()
+  table(id='datatable', cellpadding="0", cellspacing="0", border="0", class="table table-striped table-bordered table-hover")
+    thead
+      th Name
+      th Address
+      th Localization
+      th Days
+    tbody
+
+block footer
+  script(type='text/javascript', src='https://cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js')
+  script(type='text/javascript', src='/javascripts/pubs.js')

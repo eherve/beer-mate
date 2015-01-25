@@ -1,11 +1,14 @@
 'use strict';
 
 var express = require('express');
-var router = express.Router();
+var apiRouter = express.Router();
+var viewRouter = express.Router();
 var NotFoundError = require('../errors/notFoundError');
 var UnauthorizedError = require('../errors/unauthorizedError');
 var ObjectId = require('mongoose').Types.ObjectId;
 var PubModel = require('../models/pub');
+
+/* API */
 
 function addLocalizationFilter(filter, query) {
   if (query.longitude === undefined ||
@@ -29,16 +32,21 @@ function addLocalizationFilter(filter, query) {
   }
 }
 
-router.get('/', function(req, res, next) {
+function addFilter(filter, query) {
+  addLocalizationFilter(filter, query);
+  if (query.city !== undefined) { filter['address.city'] = query.city; }
+}
+
+apiRouter.get('/', function(req, res, next) {
   var filter = {};
-  addLocalizationFilter(filter, req.query);
+  addFilter(filter, req.query);
   PubModel.find(filter, function(err, pubs) {
     if (err) { return next(err); }
     res.send(pubs);
   });
 });
 
-router.post('/', function(req, res, next) {
+apiRouter.post('/', function(req, res, next) {
   if (!req.user) { return next(new UnauthorizedError()); }
   var pub = new PubModel(req.body);
   pub.userId = req.user._id;
@@ -50,7 +58,7 @@ router.post('/', function(req, res, next) {
   });
 });
 
-router.get('/:pubId', function(req, res, next) {
+apiRouter.get('/:pubId', function(req, res, next) {
   var id = req.params.pubId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   PubModel.findById(id, function(err, pub) {
@@ -60,4 +68,23 @@ router.get('/:pubId', function(req, res, next) {
   });
 });
 
-module.exports = router;
+/* View */
+
+viewRouter.get('/', function(req, res, next) {
+  if (!req.user || !req.user.administrator) {
+    return next(new UnauthorizedError());
+  }
+  res.render('pubs');
+});
+
+viewRouter.get('/datatable', function(req, res, next) {
+  if (!req.user || !req.user.administrator) {
+    return next(new UnauthorizedError());
+  }
+  PubModel.dataTable(req.query, function(err, data) {
+    if(err) { return next(err); }
+    res.send(data);
+  });
+});
+
+module.exports = { api: apiRouter, view: viewRouter };

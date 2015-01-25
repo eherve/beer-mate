@@ -7,10 +7,6 @@ a {
   color: #00B7FF;
 }
 
-div#logging > div.row > div {
-  display: inline-block
-}
-
 div.debug {
   color: blue;
 }

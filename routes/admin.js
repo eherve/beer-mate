@@ -15,6 +15,7 @@ router.get('/logging', function(req, res, next) {
   if (!isAdministrator(req)) { return next(new UnauthorizedError()); }
   var id = uuid.v4();
   function connection(socket) {
+    SocketIo.removeConnection(id, connection);
     function send(data) {
       socket.emit('data', { time: Date.now(), logger: data.transport.label,
         level: data.level, msg: data.msg, meta: data.meta });
@@ -23,7 +24,6 @@ router.get('/logging', function(req, res, next) {
     LoggerStream.on('logging', send);
     socket.on('disconnect', function () {
       LoggerStream.removeListener('logging', send);
-      SocketIo.removeConnection(id, connection);
     });
   }
   SocketIo.connection(id, connection);
