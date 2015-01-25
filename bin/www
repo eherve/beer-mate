@@ -5,7 +5,6 @@
 var loggers = require('../logger');
 loggers.configure(require('../config/logger.json'));
 var logger = loggers.get('Application');
-logger.debug('TEST');
 
 var database = require('../database');
 var databaseConfig = require('../config/database.json');

@@ -21,3 +21,7 @@ module.exports.connection = function(path, cb) {
     io.of(path).on('connection', cb);
   }
 };
+
+module.exports.removeConnection = function(path, cb) {
+  io.of(path).removeListener('connection', cb);
+}

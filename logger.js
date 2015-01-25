@@ -5,10 +5,32 @@ var path = require('path');
 var fs = require('fs');
 var winston = require('winston');
 var mkdirp = require('mkdirp');
+var events = require('events');
+var CBuffer = require('CBuffer');
 var FileTool = require('./tools/file');
 
 var settings;
 var loggers = {};
+
+/* Log Streaming */
+function Stream() {
+  events.EventEmitter.call(this);
+  this.cbuffer = new CBuffer(25);
+}
+util.inherits(Stream, events.EventEmitter);
+Stream.prototype.history = function() {
+  return this.cbuffer;
+};
+Stream.prototype.source = function(logger) {
+  var self = this;
+  logger.on('logging', function(transport, level, msg, meta) {
+    var data = { transport: transport, level: level, msg: msg, meta: meta };
+    self.cbuffer.push(data);
+    self.emit('logging', data);
+  });
+};
+var stream = module.exports.stream = new Stream();
+/**/
 
 function addConsoleOutput(logger, settings) {
   var options = JSON.parse(JSON.stringify(settings));
@@ -38,6 +60,7 @@ module.exports.get = function(name) {
   if (!name) { name = 'default'; }
   if (loggers[name]) { return loggers[name]; }
   var logger = loggers[name] = new (winston.Logger)({ exitOnError: false });
+  stream.source(logger);
   logger.label = name;
   if (!settings || !settings.outputs) { return logger; }
   if (settings.outputs.console) {
@@ -69,8 +92,3 @@ module.exports.expressLogger = function(req, res, next) {
   next();
 };
 
-module.exports.stream = function(cb) {
-  Object.keys(loggers).forEach(function(key) {
-    loggers[key].on('logging', cb);
-  });
-};

@@ -4,6 +4,8 @@ var express = require('express');
 var router = express.Router();
 var UnauthorizedError = require('../errors/unauthorizedError');
 var uuid = require('node-uuid');
+var SocketIo = require('../socket.io');
+var LoggerStream = require('../logger').stream;
 
 function isAdministrator(req) {
   return req.user && req.user.administrator === true;
@@ -12,12 +14,19 @@ function isAdministrator(req) {
 router.get('/logging', function(req, res, next) {
   if (!isAdministrator(req)) { return next(new UnauthorizedError()); }
   var id = uuid.v4();
-  require('../socket.io').connection(id, function(socket) {
-    require('../logger').stream(function(transport, level, msg, meta) {
-      socket.emit('data', { time: Date.now(), logger: transport.label,
-        level: level, msg: msg, meta: meta });
+  function connection(socket) {
+    function send(data) {
+      socket.emit('data', { time: Date.now(), logger: data.transport.label,
+        level: data.level, msg: data.msg, meta: data.meta });
+    }
+    LoggerStream.history().forEach(send);
+    LoggerStream.on('logging', send);
+    socket.on('disconnect', function () {
+      LoggerStream.removeListener('logging', send);
+      SocketIo.removeConnection(id, connection);
     });
-  });
+  }
+  SocketIo.connection(id, connection);
   res.render('admin/logging', { id: id });
 });
 
