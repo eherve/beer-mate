@@ -69,3 +69,8 @@ module.exports.expressLogger = function(req, res, next) {
   next();
 };
 
+module.exports.stream = function(cb) {
+  Object.keys(loggers).forEach(function(key) {
+    loggers[key].on('logging', cb);
+  });
+};

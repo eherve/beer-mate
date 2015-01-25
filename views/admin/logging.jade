@@ -1,0 +1,17 @@
+extends ../layout
+
+block content
+  h1 Logging
+  div#logging
+
+  script(src="/socket.io/socket.io.js")
+  script(type='text/javascript').
+    var socket = io.connect(window.location.host + '/#{id}');
+    socket.on('data', function(data) {
+      console.log(data);
+      var div = document.getElementById('logging');
+      div.innerHTML = div.innerHTML + '<div>' +
+        new Date(data.time) + ' - ' + data.level + ': [' + data.logger + '] ' + data.msg +
+        '</div>';
+    });
+

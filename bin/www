@@ -17,5 +17,6 @@ database.connect(databaseConfig, function(err) {
   app.set('port', process.env.PORT || appConfig.port || 9000);
   var server = app.listen(app.get('port'), function() {
     logger.info('Express server listening on port ' + server.address().port);
+    require('../socket.io').connect(server);
   });
 });
