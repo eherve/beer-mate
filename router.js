@@ -1,6 +1,5 @@
 'use strict';
 
-var util = require('util');
 var logger = require('./logger').get('Route');
 var auth = require('./routes/auth');
 var users = require('./routes/users');
@@ -9,9 +8,12 @@ var admin = require('./routes/admin');
 
 module.exports = function(app) {
   app.use('/api/auth', auth);
-  app.use('/api/users', users);
-  app.use('/api/pubs', pubs);
+  app.use('/api/users', users.api);
+  app.use('/api/pubs', pubs.api);
   app.use('/admin', admin);
+  app.use('/users', users.view);
+  app.use('/pubs', pubs.view);
+
   // Not found
   app.use(function(req, res, next) {
     var err = new Error('Not Found');

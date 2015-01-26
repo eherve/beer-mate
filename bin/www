@@ -2,9 +2,18 @@
 
 'use strict';
 
+var path = require('path');
+
 var loggers = require('../logger');
 loggers.configure(require('../config/logger.json'));
 var logger = loggers.get('Application');
+
+require('../tools/resource').configure({
+  debug: true, logger: loggers.get('Resource'),
+  defaultLocale: 'fr', folders: {
+    email: { dir: path.join(__dirname, '../resource/emails') }
+  }
+});
 
 var database = require('../database');
 var databaseConfig = require('../config/database.json');

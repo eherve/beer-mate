@@ -4,12 +4,21 @@ var path = require('path');
 var fs = require('fs');
 var util = require('util');
 var mongoose = require('mongoose');
+var DataTable = require('mongoose-datatable');
 var logger = require('./logger').get('Database');
 
-mongoose.set('debug', function (collectionName, method, query, doc, options) {
+mongoose.set('debug', function (collectionName, method, query) {
   logger.debug(util.format('mongo collection: %s, method: %s, quey: %s',
     collectionName, method, JSON.stringify(query)));
 });
+
+DataTable.configure({
+  debug: true,
+  logger: function(level, args) {
+    require('./logger').get('DataTable')[level].apply(this, args);
+  }
+});
+mongoose.plugin(DataTable.init);
 
 function upgradeSort(a, b) {
   a = a.replace(/^.*_([0-9]+)(\.js$|$)/, '$1');
