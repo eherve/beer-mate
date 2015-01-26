@@ -1,3 +1,6 @@
+'use strict';
+/*global $:false */
+
 $(document).ready(function() {
   $('#datatable').dataTable({
     bFilter: true,
@@ -7,7 +10,7 @@ $(document).ready(function() {
     aoColumns: [
       { mData: 'name' },
       { mRender: function(data, type, full) {
-          return full.address.street + " " + full.address.city + ", " +
+          return full.address.street + ' ' + full.address.city + ', ' +
             full.address.country;
         }
       },
@@ -18,6 +21,6 @@ $(document).ready(function() {
       { mData: 'address.street', bVisible: false }
     ],
     fnServerParams: function(aoData) {
-      aoData.push({ name: "bChunkSearch", value: true }); }
+      aoData.push({ name: 'bChunkSearch', value: true }); }
   });
 });

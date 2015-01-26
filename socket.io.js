@@ -24,4 +24,4 @@ module.exports.connection = function(path, cb) {
 
 module.exports.removeConnection = function(path, cb) {
   io.of(path).removeListener('connection', cb);
-}
+};

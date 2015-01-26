@@ -1,3 +1,6 @@
+'use strict';
+/*global $:false */
+
 $(document).ready(function() {
   $('#datatable').dataTable({
     bFilter: true,
@@ -9,6 +12,6 @@ $(document).ready(function() {
       { mData: 'administrator' }
     ],
     fnServerParams: function(aoData) {
-      aoData.push({ name: "bChunkSearch", value: true }); }
+      aoData.push({ name: 'bChunkSearch', value: true }); }
   });
 });
