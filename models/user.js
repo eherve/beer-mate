@@ -13,6 +13,7 @@ var schema = new Schema({
   password: { type: String, select: false, required: true },
   salt: { type: String, select: false },
   administrator: { type: Boolean, default: false },
+  validated: { type: Boolean, default: false },
 });
 
 /*

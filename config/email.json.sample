@@ -1,0 +1,10 @@
+{
+  "fromAddress": "admin@beermate.com",
+  "options": {
+    "service": "Gmail",
+    "auth": {
+      "user": "USER",
+      "pass": "PASS"
+    }
+  }
+}
