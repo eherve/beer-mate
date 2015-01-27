@@ -1,10 +1,12 @@
 {
-  "port": 4242,
-  "session": {
-    "name": "beermate-cookie",
-    "secret": "secret",
-    "resave": true, "saveUninitialized": true,
-    "rolling": true,
-    "idleAge": 20000, "maxAge": null, "cleanupCycle": 60000
-  }
+		"port": 4242,
+		"session": {
+				"redis": {
+						"host": "localhost",
+						"port": 6379,
+						"pass": "beermate",
+						"prefix": "bmate:"
+				},
+				"secret": "1234567890QWERTY"
+		}
 }
