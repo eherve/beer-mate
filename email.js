@@ -14,7 +14,6 @@ module.exports.configure = function(config) {
   config = config || {};
   if (config.debug === true) { debug = true; }
   fromAddress = config.fromAddress;
-  //transport = nodemailer.createTransport(config.type, config.options);
   transport = nodemailer.createTransport(config.options);
   transport.use('compile', htmlToText());
 };
