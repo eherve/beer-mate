@@ -6,13 +6,11 @@ var jade = require('jade');
 var moment = require('moment');
 var logger = require('./logger').get('Email');
 
-var debug = false;
 var fromAddress;
 var transport;
 
 module.exports.configure = function(config) {
   config = config || {};
-  if (config.debug === true) { debug = true; }
   fromAddress = config.fromAddress;
   transport = nodemailer.createTransport(config.options);
   transport.use('compile', htmlToText());

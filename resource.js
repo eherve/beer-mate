@@ -10,8 +10,6 @@ var FUNC_FILE_TMPL = 'get%sFile';
 var NO_FILE_MSG_TMPL = 'File %s does not exists !';
 var ADD_FUNC_MSG_TMPL = 'Add function %s !';
 
-var debug = false;
-
 var defaultLocale = 'fr';
 var folders = {};
 var cache = {};
@@ -61,7 +59,6 @@ function buildFunc() {
 
 module.exports.configure = function(options) {
   options = options || {};
-  if (options.debug === true) { debug = true; }
   if ('string' === typeof options.defaultLocale) {
     defaultLocale = options.defaultLocale;
   }

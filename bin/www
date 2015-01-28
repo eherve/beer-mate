@@ -10,7 +10,7 @@ var logger = loggers.get('Application');
 
 // Resource
 require('../resource').configure({
-  debug: true, defaultLocale: 'fr',
+  defaultLocale: 'fr',
   folders: {
     email: { template: '{{filename}}_{{locale}}.jade',
       dir: path.join(__dirname, '../resources/emails')
