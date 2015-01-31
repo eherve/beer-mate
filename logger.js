@@ -69,7 +69,16 @@ module.exports.get = function(name) {
   if (settings.outputs.file) {
     addFileOutput(logger, settings.outputs.file);
   }
-  return logger;
+		// START FIXME: should be fixed in next winston version
+		var oldLogger = logger.log;
+		logger.log = function(level, message) {
+				if (util.isError(message)) {
+						message = message.message;
+				}
+						oldLogger.call(this, level, message);
+		}
+		//  END  FIXME
+		return logger;
 };
 
 module.exports.configure = function(options) {
