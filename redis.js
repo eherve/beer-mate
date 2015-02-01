@@ -22,19 +22,11 @@ module.exports.connect = function(config, cb) {
   });
 };
 
-module.exports.get = function(token, cb) {
-  if (redisCli !== null && redisCli.connected) {
-    redisCli.get(token, cb);
-  } else {
-    cb(new Error('Reis server not connected'));
-  }
-};
-
-module.exports.register = function(token, userid, admin, cb) {
+var register = module.exports.register = function(token, userid, cb) {
   if (redisCli !== null && redisCli.connected) {
     if (token.trim() !== '' ) { // TODO remove, it will never happend
       redisCli.set(token, JSON.stringify({
-        id: userid, admin: admin, lastAccess: Date.now()
+        id: userid, lastAccess: Date.now()
       }), cb);
     } else {
       cb(new Error('didn\'t receive a token'));
@@ -47,6 +39,21 @@ module.exports.register = function(token, userid, admin, cb) {
 module.exports.unregister = function(token, cb) {
   if (redisCli !== null && redisCli.connected) {
     redisCli.del(token, cb);
+  } else {
+    cb(new Error('Redis server not connected'));
+  }
+};
+
+module.exports.get = function(token, cb) {
+  if (redisCli !== null && redisCli.connected) {
+    redisCli.get(token, function(err, data) {
+      if (err) {return cb(err);}
+      if (data === null) { return cb(null, null); } 
+      register(token, data.id, function(err) {
+        if (err) {return cb(err);}
+        cb(null, data);
+      });
+    });
   } else {
     cb(new Error('Redis server not connected'));
   }
