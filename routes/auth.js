@@ -20,29 +20,30 @@ router.get('/logout', function(req, res) {
   res.end();
 });
 
-function sendConfirmationEmail(email, user) {
-  Resource.getEmailFile('confirmationEmail',
+function sendConfirmationEmail(req, email, user) {
+  Resource.getEmailFile('confirmationEmail', req.locale, function(err, file) {
+    if (err) { return; }
+    Email.send(email, req.translate('email.confirmation'), file,
     {
       user: user,
-      expires: new Date(Date.now().getTime() + CONFIRM_EXPIRATION_DELAY),
+      expires: new Date(Date.now() + CONFIRM_EXPIRATION_DELAY),
       creation: true
     },
-    function(err, file) {
+    function(err) {
       if (err) { return; }
-      Email.send(email, 'email.confirmation', file, function(err) {
-        if (err) { return; }
-        logger.debug('Validation email sent');
-      });
+      logger.debug('Validation email sent');
     });
+  });
 }
 
 router.post('/join', function(req, res, next) {
   var email = req.body.email;
   var password = req.body.password;
   if (!email || !password) { return next(new BadRequestError()); }
-  (new UserModel({ email: email, password: password })).save(function(err, user) {
+  (new UserModel({ email: email, password: password }))
+  .save(function(err, user) {
     if (err) { return next(err); }
-    sendConfirmationEmail(email, user);
+    sendConfirmationEmail(req, email, user);
     res.end();
   });
 });

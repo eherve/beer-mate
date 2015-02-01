@@ -29,7 +29,7 @@ module.exports = function(grunt) {
     watch: {
       all: {
         files: FILES.watch.all,
-        tasks: [ 'newer:jshint:all' ],
+        tasks: [ 'newer:jshint:all', 'watch:all' ],
         options: { }
       },
       server: {
@@ -104,7 +104,8 @@ module.exports = function(grunt) {
 
   // Tasks
   grunt.registerTask('default', [
-    'jshint:all'
+    'jshint:all',
+    'watch:all'
   ]);
 
   grunt.registerTask('debug', [

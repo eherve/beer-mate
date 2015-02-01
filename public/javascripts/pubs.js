@@ -14,8 +14,13 @@ $(document).ready(function() {
             full.address.country;
         }
       },
-      { mData: 'address.loc' },
-      { mData: 'days', sDefaultContent: '' },
+      { mData: 'address.loc',
+        mRender: function(data, type, full) {
+          return data != null && data.length === 2 ?
+            ('longitude: ' + data[0] + ', latitude: ' + data[1]) : '';
+        }
+      },
+      { mData: 'days', sDefaultContent: '' }, // TODO
       { mData: 'address.country', bVisible: false },
       { mData: 'address.city', bVisible: false },
       { mData: 'address.street', bVisible: false }

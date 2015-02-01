@@ -1,15 +1,23 @@
 'use strict';
 
 var Schema = require('mongoose').Schema;
+var validate = require('mongoose-validator');
 var crypto = require('crypto');
 var SALT_RANDOM_SIZE = 16;
 var HASH_ITERATION = 420;
 var HASH_LEN = 512;
 
+var emailValidator = [
+  validate({
+    validator: 'isEmail',
+    message: 'validator.email'
+  })
+];
+
 var schema = new Schema({
   name: { type: String },
   surname: { type: String },
-	email: { type: String, required: true },
+	email: { type: String, required: true, validate: emailValidator },
   password: { type: String, select: false, required: true },
   salt: { type: String, select: false },
   administrator: { type: Boolean, default: false },

@@ -8,11 +8,22 @@ var loggers = require('../logger');
 loggers.configure(require('../config/logger.json'));
 var logger = loggers.get('Application');
 
+var defaultLocale = 'fr';
+
+// I18n
+require('../i18n').configure({
+  update: process.env.NODE_ENV === 'development',
+  defaultLocale: defaultLocale,
+  locales: [ 'fr' ],
+  directory: path.join(__dirname, '../locales')
+});
+
 // Resource
 require('../resource').configure({
-  defaultLocale: 'fr',
+  defaultLocale: defaultLocale,
   folders: {
-    email: { template: '{{filename}}_{{locale}}.jade',
+    email: { 
+      template: '{{filename}}_{{locale}}.jade',
       dir: path.join(__dirname, '../resources/emails')
     }
   }

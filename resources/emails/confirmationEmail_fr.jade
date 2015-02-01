@@ -1,16 +1,16 @@
-b.
+b
   if data.creation
-    Validation Courriel Nouveau Compte Utilisateur 
+    | Validation Courriel Nouveau Compte Utilisateur 
   else
-    Validation Courriel Compte Utilisateur
+    | Validation Courriel Compte Utilisateur
 br
 br
-span.
-  Identifiant: <i>#{email}</i>
+span
+  | Identifiant: <i>#{email}</i>
 br
 br
-span.
-  Pour activer le compte, cliquer <a href="#{proto}://#{url}:#{port}/api/auth/confirm/#{data.user._id}" target="_blank">ici</a>.
+span
+  | Pour activer le compte, cliquer <a href="#{proto}://#{url}:#{port}/api/auth/confirm/#{data.user._id}" target="_blank">ici</a>.
 br
-span.
-  Attention ce lien expire: #{__moment(data.expires).lang('fr').format('LLLL')}
+span
+  | Attention ce lien expire: #{__moment(data.expires).lang('fr').format('LLLL')}

@@ -12,6 +12,9 @@ require('./passport');
 
 var app = express();
 
+// I18n
+app.use(require('./i18n').init);
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -31,8 +34,10 @@ if (sessionConfig.redis) {
   }));
 } else { app.use(session(sessionConfig)); }
 
+// Passport
 app.use(passport.initialize());
 app.use(passport.session());
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
