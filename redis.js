@@ -1,7 +1,5 @@
 'use strict';
 
-var path = require('path');
-var fs = require('fs');
 var util = require('util');
 var logger = require('./logger').get('redisAuth');
 var redis = require('redis');
@@ -23,19 +21,19 @@ module.exports.connect = function(config, cb) {
 				});
 				cb();
 		});
-}
+};
 
 module.exports.get = function(token, next) {
-		if (redisCli != null && redisCli.connected) {
+		if (redisCli !== null && redisCli.connected) {
 				redisCli.get(token, next);
 		} else {
 				next(new Error('Redis not connected'));
 		}
-}
+};
 
 module.exports.register = function(token, userid, admin, next) {
-		if (redisCli != null && redisCli.connected) {
-				if (token.trim() != '' ) {
+		if (redisCli !== null && redisCli.connected) {
+				if (token.trim() !== '' ) {
 						redisCli.set(token, JSON.stringify({id: userid, admin: admin, lastAccess: new Date()}), next);
 				} else {
 						next(new Error('didn\'t receive a token'));
@@ -43,12 +41,12 @@ module.exports.register = function(token, userid, admin, next) {
 		} else {
 				next(new Error('Redis not connected'));
 		}
-}
+};
 
 module.exports.unregister = function(token, next) {
-		if (redisCli != null && redisCli.connected) {
+		if (redisCli !== null && redisCli.connected) {
 				redisCli.del(token, next);
 		} else {
 				next(new Error('Redis not connected'));
 		}
-}
+};

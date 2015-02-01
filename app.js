@@ -5,7 +5,7 @@ var path = require('path');
 var logger = require('./logger').expressLogger;
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var session = require('express-session');
+//var session = require('express-session');
 var passport = require('passport');
 require('./passport');
 
