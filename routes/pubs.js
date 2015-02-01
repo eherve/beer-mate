@@ -4,7 +4,7 @@ var express = require('express');
 var apiRouter = express.Router();
 var viewRouter = express.Router();
 var NotFoundError = require('../errors/notFoundError');
-var UnauthorizedError = require('../errors/unauthorizedError');
+var Auth = require('../tools/auth');
 var ObjectId = require('mongoose').Types.ObjectId;
 var PubModel = require('../models/pub');
 
@@ -46,13 +46,11 @@ apiRouter.get('/', function(req, res, next) {
   });
 });
 
-apiRouter.post('/', function(req, res, next) {
-  if (!req.user) { return next(new UnauthorizedError()); }
+apiRouter.post('/', Auth.userConnected, function(req, res, next) {
   var pub = new PubModel(req.body);
-  pub.userId = req.user._id;
+  pub.userId = req.redisData.userId;
   pub.createdAt = Date.now();
   pub.save(function(err) {
-    console.log(err);
     if (err) { return next(err); }
     res.end();
   });
@@ -63,24 +61,33 @@ apiRouter.get('/:pubId', function(req, res, next) {
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   PubModel.findById(id, function(err, pub) {
     if (err) { return next(err); }
-    if (pub) { return res.send(pub); }
-    next(new NotFoundError());
+    if (!pub) { return next(new NotFoundError()); }
+    res.send(pub);
+  });
+});
+
+apiRouter.put('/:pubId', Auth.userConnected, function(req, res, next) {
+  var id = req.params.pubId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  PubModel.findById(id, function(err, pub) {
+    if (err) { return next(err); }
+    if (!pub) { return next(new NotFoundError()); }
+    pub.merge(req.body, { fields: 'name days currency' });
+    pub.updatedAt = Date.now();
+    pub.save(function(err) {
+      if (err) { return next(err); }
+      res.end();
+    });
   });
 });
 
 /* View */
 
-viewRouter.get('/', function(req, res, next) {
-  if (!req.user || !req.user.administrator) {
-    return next(new UnauthorizedError());
-  }
+viewRouter.get('/', Auth.adminConnected, function(req, res) {
   res.render('pubs');
 });
 
-viewRouter.get('/datatable', function(req, res, next) {
-  if (!req.user || !req.user.administrator) {
-    return next(new UnauthorizedError());
-  }
+viewRouter.get('/datatable', Auth.adminConnected, function(req, res, next) {
   PubModel.dataTable(req.query, function(err, data) {
     if(err) { return next(err); }
     res.send(data);

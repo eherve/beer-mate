@@ -22,6 +22,10 @@ var schema = new Schema({
   salt: { type: String, select: false },
   administrator: { type: Boolean, default: false },
   validated: { type: Boolean, default: false },
+  validation: {
+    token: { type: String },
+    expires: { type: Date }
+  }
 });
 
 /*

@@ -34,14 +34,14 @@ var schema = new Schema({
     thursday: daySchema,
     friday: daySchema,
     saturday: daySchema,
-    sunday: daySchema,
+    sunday: daySchema
   },
   currency: { type: String },
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   enabled: { type: Boolean },
   validated: { type: Boolean },
   createdAt: { type: Date },
-  updatedAt: { type: Date },
+  updatedAt: { type: Date }
 });
 
 /*

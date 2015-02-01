@@ -15,8 +15,8 @@ $(document).ready(function() {
         }
       },
       { mData: 'address.loc',
-        mRender: function(data, type, full) {
-          return data != null && data.length === 2 ?
+        mRender: function(data) {
+          return data && data.length === 2 ?
             ('longitude: ' + data[0] + ', latitude: ' + data[1]) : '';
         }
       },

@@ -9,6 +9,7 @@ $(document).ready(function() {
     sAjaxSource: '/users/datatable',
     aoColumns: [
       { mData: 'email' },
+      { mData: 'validated' },
       { mData: 'administrator' }
     ],
     fnServerParams: function(aoData) {

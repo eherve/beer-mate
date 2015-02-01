@@ -9,7 +9,7 @@ var logger = require('./logger').get('Resource');
 var FUNC_FILE_TMPL = 'get%sFile';
 var FUNC_FILE_SYNC_TMPL = 'get%sFileSync';
 var NO_FILE_MSG_TMPL = 'File %s does not exists !';
-var ADD_FUNC_MSG_TMPL = 'Add function %s !';
+var ADD_FUNC_MSG_TMPL = 'Add function %s';
 var LOCALE_FILE_TMPL = '{{filename}}_{{locale}}';
 
 var defaultLocale = 'en';

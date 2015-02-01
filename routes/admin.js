@@ -2,17 +2,12 @@
 
 var express = require('express');
 var router = express.Router();
-var UnauthorizedError = require('../errors/unauthorizedError');
+var Auth = require('../tools/auth');
 var uuid = require('node-uuid');
 var SocketIo = require('../socket.io');
 var LoggerStream = require('../logger').stream;
 
-function isAdministrator(req) {
-  return req.user && req.user.administrator === true;
-}
-
-router.get('/logging', function(req, res, next) {
-  if (!isAdministrator(req)) { return next(new UnauthorizedError()); }
+router.get('/logging', Auth.adminConnected, function(req, res) {
   var id = uuid.v4();
   function connection(socket) {
     SocketIo.removeConnection(id, connection);

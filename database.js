@@ -5,10 +5,11 @@ var fs = require('fs');
 var util = require('util');
 var mongoose = require('mongoose');
 var DataTable = require('mongoose-datatable');
+var Merge = require('mongoose-merge-plugin');
 var logger = require('./logger').get('Database');
 
 mongoose.set('debug', function (collectionName, method, query) {
-  logger.debug(util.format('mongo collection: %s, method: %s, quey: %s',
+  logger.debug(util.format('run mongo collection: %s, method: %s, quey: %s',
     collectionName, method, JSON.stringify(query)));
 });
 
@@ -19,6 +20,7 @@ DataTable.configure({
   }
 });
 mongoose.plugin(DataTable.init);
+mongoose.plugin(Merge);
 
 function upgradeSort(a, b) {
   a = a.replace(/^.*_([0-9]+)(\.js$|$)/, '$1');
@@ -37,6 +39,7 @@ function upgradeFilter(upgrades) {
 }
 
 function upgrade(cb) {
+  logger.debug('upgrade database');
   var ParameterModel = require('./models/parameter');
   ParameterModel.findOne({ name: 'upgrade' }, function(err, param) {
     if (err) { return cb(err); }
@@ -68,7 +71,7 @@ function loadModels(db, cb) {
     for (var index = 0; index < models.length; ++index) {
       var modelName = models[index];
       if (!/^.*.js$/.test(modelName)) { continue; }
-      logger.debug('Load model', modelName);
+      logger.debug(util.format('Load model %s', modelName));
       var model = require(path.join(__dirname, 'models', modelName));
       model.register(db);
     }
