@@ -39,7 +39,7 @@ database.connect(databaseConfig, function(err) {
   if (err) { return logger.error(err);} 
 
   // Redis
-  var redis = require('../tools/auth.js');
+  var redis = require('../redis.js');
   var redisConfig = require('../config/application').session;
   redis.connect(redisConfig, function(err) {
     if (err) { return logger.error(err); }

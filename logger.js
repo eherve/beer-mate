@@ -76,7 +76,7 @@ module.exports.get = function(name) {
 						message = message.message;
 				}
 						oldLogger.call(this, level, message);
-		}
+		};
 		//  END  FIXME
 		return logger;
 };
