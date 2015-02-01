@@ -36,13 +36,19 @@ require('../email').configure(require('../config/email.json'));
 var database = require('../database');
 var databaseConfig = require('../config/database.json');
 
+var redis = require('../tools/auth.js');
+var redisConfig = require('../config/application').session;
+
 database.connect(databaseConfig, function(err) {
-  if (err) { return logger.error(err); }
-  var app = require('../app');
-  var appConfig = require('../config/application.json');
-  app.set('port', process.env.PORT || appConfig.port || 9000);
-  var server = app.listen(app.get('port'), function() {
-    logger.info('Express server listening on port ' + server.address().port);
-    require('../socket.io').connect(server);
-  });
+  if (err) { return logger.error(err);} 
+  redis.connect(redisConfig, function(err) {
+    if (err) { return logger.error(err); }
+    var app = require('../app');
+    var appConfig = require('../config/application.json');
+    app.set('port', process.env.PORT || appConfig.port || 9000);
+    var server = app.listen(app.get('port'), function() {
+        logger.info('Express server listening on port ' + server.address().port);
+        require('../socket.io').connect(server);
+    });
+ });
 });

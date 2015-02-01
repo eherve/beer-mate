@@ -1,12 +1,10 @@
 {
 		"port": 4242,
 		"session": {
-				"redis": {
-						"host": "localhost",
-						"port": 6379,
-						"pass": "beermate",
-						"prefix": "bmate:"
-				},
-				"secret": "1234567890QWERTY"
+				"host": "sd-43627.dedibox.fr",
+				"port": 6379,
+				"options": {
+						"auth_pass": "redisAdmin"
+				}
 		}
 }
