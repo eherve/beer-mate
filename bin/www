@@ -35,14 +35,16 @@ require('../email').configure(require('../config/email.json'));
 // Database
 var database = require('../database');
 var databaseConfig = require('../config/database.json');
-
-var redis = require('../tools/auth.js');
-var redisConfig = require('../config/application').session;
-
 database.connect(databaseConfig, function(err) {
   if (err) { return logger.error(err);} 
+
+  // Redis
+  var redis = require('../tools/auth.js');
+  var redisConfig = require('../config/application').session;
   redis.connect(redisConfig, function(err) {
     if (err) { return logger.error(err); }
+
+    // Application
     var app = require('../app');
     var appConfig = require('../config/application.json');
     app.set('port', process.env.PORT || appConfig.port || 9000);
