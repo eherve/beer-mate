@@ -6,8 +6,10 @@ var util = require('util');
 var redis = require('../redis');
 var uuid = require('node-uuid');
 var logger = require('../logger').get('Route');
+var NotFoundError = require('../errors/notFoundError');
 var UnauthorizedError = require('../errors/unauthorizedError');
 var BadRequestError = require('../errors/badRequestError');
+var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../models/user');
 var Resource = require('../resource');
 var Email = require('../email');
@@ -15,6 +17,8 @@ var Auth = require('../tools/auth');
 
 var TOKEN_NAME = 'auth_token';
 var CONFIRM_EXPIRATION_DELAY = 24 * 60 * 60 * 1000;
+
+// Login
 
 router.post('/login', function(req, res, next) { // TODO what if already connected ?
   if (!req.body.email || !req.body.password) {
@@ -33,6 +37,8 @@ router.post('/login', function(req, res, next) { // TODO what if already connect
   });
 });
 
+// Logout
+
 router.get('/logout', Auth.userConnected, function(req, res, next) {
   if (!req.get(TOKEN_NAME) && !req.query[TOKEN_NAME]) {
     return next(new BadRequestError());
@@ -44,6 +50,8 @@ router.get('/logout', Auth.userConnected, function(req, res, next) {
       res.set(TOKEN_NAME, undefined).end();
   });
 });
+
+// Join
 
 function sendConfirmationEmail(req, user, token, expires) {
   Resource.getEmailFile('confirmationEmail', req.locale, function(err, file) {
@@ -70,6 +78,27 @@ router.post('/join', function(req, res, next) {
     if (err) { return next(err); }
     sendConfirmationEmail(req, user, token, expires);
     res.end();
+  });
+});
+
+// Confirm
+
+router.get('/confirm/:userId/:token', function(req, res, next) {
+  var id = req.params.userId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  UserModel.findById(id, function(err, user) {
+    if (err) { return next(err); }
+    if (!user) { return next(new NotFoundError()); }
+    if (user.validated === true) { return res.end(); } // TODO validate ok page ?
+    if (user.validation.token !== req.params.token ||
+      user.validation.expires < Date.now()) {
+        return next(new NotFoundError());
+    }
+    user.validated = true;
+    user.save(function(err) {
+      if (err) { return next(err); }
+      res.end(); // TODO validate ok page ?
+    });
   });
 });
 
