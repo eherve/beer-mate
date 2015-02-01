@@ -45,20 +45,16 @@ router.get('/logout', Auth.userConnected, function(req, res, next) {
   });
 });
 
-function sendConfirmationEmail(req, email, user) {
+function sendConfirmationEmail(req, user, token, expires) {
   Resource.getEmailFile('confirmationEmail', req.locale, function(err, file) {
     if (err) { return; }
-    Email.send(email, req.translate('email.confirmation'), file,
-    {
-      host: req.get('host'),
-      user: user,
-      expires: new Date(Date.now() + CONFIRM_EXPIRATION_DELAY),
-      creation: true
-    },
-    function(err) {
-      if (err) { return; }
-      logger.debug('Validation email sent');
-    });
+    Email.send(user.email, req.translate('email.confirmation'), file,
+    { host: req.get('host'), user: user, token: token, expires: expires,
+      creation: true }, function(err) {
+        if (err) { return; }
+        logger.debug('Validation email sent');
+      }
+    );
   });
 }
 
@@ -66,10 +62,13 @@ router.post('/join', function(req, res, next) {
   var email = req.body.email;
   var password = req.body.password;
   if (!email || !password) { return next(new BadRequestError()); }
-  (new UserModel({ email: email, password: password }))
-  .save(function(err, user) {
+  var token = uuid.v4();
+  var expires = new Date(Date.now() + CONFIRM_EXPIRATION_DELAY);
+  (new UserModel({ email: email, password: password,
+    validation: { token: token, expires: expires }
+  })).save(function(err, user) {
     if (err) { return next(err); }
-    sendConfirmationEmail(req, email, user);
+    sendConfirmationEmail(req, user, token, expires);
     res.end();
   });
 });

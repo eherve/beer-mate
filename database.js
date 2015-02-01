@@ -5,6 +5,7 @@ var fs = require('fs');
 var util = require('util');
 var mongoose = require('mongoose');
 var DataTable = require('mongoose-datatable');
+var Merge = require('mongoose-merge-plugin');
 var logger = require('./logger').get('Database');
 
 mongoose.set('debug', function (collectionName, method, query) {
@@ -19,6 +20,7 @@ DataTable.configure({
   }
 });
 mongoose.plugin(DataTable.init);
+mongoose.plugin(Merge);
 
 function upgradeSort(a, b) {
   a = a.replace(/^.*_([0-9]+)(\.js$|$)/, '$1');

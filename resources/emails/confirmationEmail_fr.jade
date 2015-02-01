@@ -10,7 +10,7 @@ span
 br
 br
 span
-  | Pour activer le compte, cliquer <a href="https://#{data.host}/api/auth/confirm/#{data.user._id}" target="_blank">ici</a>.
+  | Pour activer le compte, cliquer <a href="https://#{data.host}/api/auth/confirm/#{data.user._id}/#{data.token}" target="_blank">ici</a>.
 br
 span
   | Attention ce lien expire: #{__moment(data.expires).locale('fr').format('LLLL')}
