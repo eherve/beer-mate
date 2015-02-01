@@ -50,6 +50,7 @@ function sendConfirmationEmail(req, email, user) {
     if (err) { return; }
     Email.send(email, req.translate('email.confirmation'), file,
     {
+      host: req.get('host'),
       user: user,
       expires: new Date(Date.now() + CONFIRM_EXPIRATION_DELAY),
       creation: true
