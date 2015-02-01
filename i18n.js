@@ -53,7 +53,7 @@ function getLocaleFilePath(l) {
 function loadLocale(l) {
   var filepath = getLocaleFilePath(l);
   if (!filepath) { return; }
-  logger.debug('Loading locale', l);
+  logger.debug(util.format('Loading locale %s', l));
   try {
     locales[l] = require(filepath);
   } catch(err) { logger.error(err); }
@@ -61,7 +61,7 @@ function loadLocale(l) {
 
 module.exports.configure = function(options) {
   options = options || {};
-  logger.debug(util.format('configure(%s)', util.inspect(options, false, 0)));
+  logger.debug(util.format('configure(%s)', JSON.stringify(options)));
   if (!options.locales || !util.isArray(options.locales) ||
       options.locales.length === 0) {
     return logger.error('No possible locales specified !');
@@ -154,8 +154,8 @@ function translate(locale, dict, key, options) {
       return render(value.default, options);
   }
   logger.error(
-      util.format('Unmanage translation key value "%s" with options "%s"',
-        util.inspect(value), util.inspect(options)));
+      util.format('Unmanage translation key "%s" value "%s" with options "%s"',
+        key, JSON.stringify(value), JSON.stringify(options)));
   return key;
 }
 
@@ -175,7 +175,7 @@ module.exports.translate = function(key, locale, options) {
   }
   options = options || {};
   logger.debug(util.format('translate(%s, %s, %s)',
-        key, locale, util.inspect(options)));
+        key, locale, JSON.stringify(options)));
   var dict = (locales[locale] || locales[defaultLocale]);
   return dict ? translate(locale, dict, key, options) : key;
 };
