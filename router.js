@@ -22,7 +22,7 @@ module.exports = function(app) {
   });
   // Error
   app.use(function(err, req, res, next) { // jshint ignore:line
-    if (!err.status || err.status === 500) { logger.error(err.message, err); }
+		if (!err.status || err.status === 500) { logger.error(err.message, err); }
     else { logger.debug(err.message, err); }
     res.status(err.status || 500);
     res.send(process.env.NODE_ENV === 'development' ? err : null);
