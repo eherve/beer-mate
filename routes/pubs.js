@@ -72,7 +72,7 @@ apiRouter.put('/:pubId', Auth.userConnected, function(req, res, next) {
   PubModel.findById(id, function(err, pub) {
     if (err) { return next(err); }
     if (!pub) { return next(new NotFoundError()); }
-    pub.merge(req.body);
+    pub.merge(req.body, { fields: 'name days currency' });
     pub.updatedAt = Date.now();
     pub.save(function(err) {
       if (err) { return next(err); }

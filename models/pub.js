@@ -20,11 +20,11 @@ var daySchema = {
 var schema = new Schema({
   name: { type: String },
   address: {
-    country: { type: String, mergeable: false },
-    postalCode: { type: String, mergeable: false },
-    city: { type: String, mergeable: false },
-    street: { type: String, mergeable: false },
-    loc: { type: [ Number ], index: '2dsphere', mergeable: false }
+    country: { type: String },
+    postalCode: { type: String },
+    city: { type: String },
+    street: { type: String },
+    loc: { type: [ Number ], index: '2dsphere' }
   },
   days: {
     default: daySchema,
@@ -34,14 +34,14 @@ var schema = new Schema({
     thursday: daySchema,
     friday: daySchema,
     saturday: daySchema,
-    sunday: daySchema,
+    sunday: daySchema
   },
   currency: { type: String },
-  userId: { type: Schema.Types.ObjectId, ref: 'User', mergeable: false },
-  enabled: { type: Boolean, mergeable: false },
-  validated: { type: Boolean, mergeable: false },
-  createdAt: { type: Date, mergeable: false },
-  updatedAt: { type: Date, mergeable: false },
+  userId: { type: Schema.Types.ObjectId, ref: 'User' },
+  enabled: { type: Boolean },
+  validated: { type: Boolean },
+  createdAt: { type: Date },
+  updatedAt: { type: Date }
 });
 
 /*
