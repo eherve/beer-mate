@@ -48,4 +48,13 @@ viewRouter.get('/datatable', Auth.adminConnected, function(req, res, next) {
   });
 });
 
+apiRouter.delete('/remove', Auth.adminConnected, function(req, res, next) {
+  var ids = req.body.ids;
+  UserModel.remove({ _id: { $in: ids } }, function(err, data) {
+    if (err) { return next(err); }
+    console.log(data);
+    res.end();
+  });
+});
+
 module.exports = { api: apiRouter, view: viewRouter };

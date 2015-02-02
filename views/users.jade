@@ -2,6 +2,8 @@ extends layout
 
 block head
   link(rel='stylesheet', href='https://cdn.datatables.net/1.10.4/css/jquery.dataTables.min.css')
+  link(rel='stylesheet', href='https://cdn.datatables.net/plug-ins/3cfcc339e89/integration/bootstrap/3/dataTables.bootstrap.css')
+  link(rel='stylesheet', href='/modules/TableTools/css/dataTables.tableTools.css')
 
 block content
   h1 Users
@@ -15,4 +17,6 @@ block content
 
 block footer
   script(type='text/javascript', src='https://cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js')
+  script(type='text/javascript', src='/modules/TableTools/js/dataTables.tableTools.js')
+  script(type='text/javascript', src='/modules/tableEditor/js/tableEditor.js')
   script(type='text/javascript', src='/javascripts/users.js')
