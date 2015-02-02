@@ -1,55 +1,72 @@
 'use strict';
 
-//var logger = require('../logger').get('redisAuth');
+var util = require('util');
+var uuid = require('node-uuid');
 var redis = require('../redis');
+var logger = require('../logger').get('Route');
 var UnauthorizedError = require('../errors/unauthorizedError');
 var ForbiddenError = require('../errors/forbiddenError');
-var logger = require('../logger').get('Auth');
-var util = require('util');
+var UserModel = require('../models/user');
 
-var getDbUser = function(userid, req, next) {
-  var users = require('../models/user');
-  users.findById(userid).exec(function(err, userInfo) {
-    if (err) {return next(err); }
-    //if (userInfo === null) {return next(new UnauthorizedError());}
-    req.user = userInfo;
-    next();
+var TOKEN_NAME = 'auth_token';
+
+function getRedisData(token, cb) {
+  redis.get(token, function(err, data) {
+    if (err) { return cb(err); }
+    if (!data) { return cb(new UnauthorizedError()); }
+    cb(null, data);
+  });
+}
+
+module.exports.getToken = function(req) {
+  return req.get(TOKEN_NAME) || req.cookies[TOKEN_NAME] || req.query[TOKEN_NAME];
+};
+
+module.exports.sendToken = function(res, token) {
+  res.cookie(TOKEN_NAME, token).set(TOKEN_NAME, token).send(token);
+};
+
+module.exports.login = function(req, res, next) {
+  var token = uuid.v4();
+  redis.register(token, req.user._id, function(err) {
+    if (err) { return next(err); }
+    module.exports.sendToken(res, token);
   });
 };
 
-var userConnected = module.exports.userConnected = function(req, res, next) {
-  /*jshint camelcase: false */
-  var token = req.headers.auth_token || req.query.auth_token;
-  /*jshint camelcase: true */
+module.exports.logout = function(req, res, next) {
+  var token = module.exports.getToken(req);
+  redis.unregister(token, function(err) {
+    if (err) { return next(err); }
+    res.set(TOKEN_NAME, undefined).end();
+  });
+};
 
-  redis.get(token, function(err, reply) {
-    if (err) {return next(err);}
-    var data = JSON.parse(reply);
-    if (reply !== null) {
-      req.redisData = data;
-      req.redisData.token = token;
-      getDbUser(data.id, req, function(err) {
-	if (err) {return next(err); }
-	if (req.user === null) {
-	  logger.warn(util.format('remove token %s for unknown user %s', token, data.id));
-	  redis.unregister(token);
-	  next(new UnauthorizedError());
-	} else {
-	  next();
-	}
-      });
-    } else {
-      next(new UnauthorizedError());
-    }
+module.exports.userConnected = function(req, res, next) {
+  var token = module.exports.getToken(req);
+  if (!token) { return next(new UnauthorizedError()); }
+  getRedisData(token, function(err, data) {
+    if (err) { return next(err); }
+    UserModel.findById(data.id, function(err, user) {
+      if (err) { next(err); }
+      if (!user) {
+        logger.warn(util.format('remove token %s of unknown user %s',
+          token, data.id));
+        redis.unregister(token, function(err) {
+          if (err) { logger.error(err); }
+        });
+        return next(new UnauthorizedError());
+      }
+      req.redisData = data; req.redisData.token = token; req.user = user;
+      next();
+    });
   });
 };
 
 module.exports.adminConnected = function(req, res, next) {
-  userConnected(req, res, function(err) {
-    if (err) { return next(err);}
-    if (req.user.administrator !== true) {
-      return next(new ForbiddenError());
-    }
+  module.exports.userConnected(req, res, function(err) {
+    if (err) { return next(err); }
+    if (req.user.administrator !== true) { return next(new ForbiddenError()); }
     next();
   });
 };

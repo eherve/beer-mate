@@ -22,12 +22,12 @@ module.exports.connect = function(config, cb) {
   });
 };
 
-var register = module.exports.register = function(token, userid, cb) {
+var register = module.exports.register = function(token, userId, cb) {
+  logger.debug('register userId %s for token %s', userId, token);
   if (redisCli !== null && redisCli.connected) {
     if (token.trim() !== '' ) { // TODO remove, it will never happend
       redisCli.set(token, JSON.stringify({
-        id: userid, lastAccess: Date.now()
-      }), cb);
+        id: userId, lastAccess: Date.now() }), cb);
     } else {
       cb(new Error('didn\'t receive a token'));
     }
@@ -37,6 +37,7 @@ var register = module.exports.register = function(token, userid, cb) {
 };
 
 module.exports.unregister = function(token, cb) {
+  logger.debug('unregister token %s', token);
   if (redisCli !== null && redisCli.connected) {
     redisCli.del(token, cb);
   } else {
@@ -47,10 +48,13 @@ module.exports.unregister = function(token, cb) {
 module.exports.get = function(token, cb) {
   if (redisCli !== null && redisCli.connected) {
     redisCli.get(token, function(err, data) {
-      if (err) {return cb(err);}
-      if (data === null) { return cb(null, null); } 
+      if (err) { return cb(err); }
+      if (data === null) { return cb(null, null); }
+      try {
+        data = JSON.parse(data);
+      } catch(err) { return cb(err); }
       register(token, data.id, function(err) {
-        if (err) {return cb(err);}
+        if (err) { return cb(err); }
         cb(null, data);
       });
     });
