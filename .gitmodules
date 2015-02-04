@@ -1,0 +1,6 @@
+[submodule "public/modules/TableTools"]
+	path = public/modules/TableTools
+	url = https://github.com/DataTables/TableTools.git
+[submodule "public/modules/tableEditor"]
+	path = public/modules/tableEditor
+	url = https://github.com/eherve/dataTable-Editor.git
