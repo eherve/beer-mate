@@ -1,5 +1,6 @@
 'use strict';
 
+var util = require('util');
 var express = require('express');
 var apiRouter = express.Router();
 var viewRouter = express.Router();
@@ -10,10 +11,10 @@ var PubModel = require('../models/pub');
 
 /* API */
 
-function addLocalizationFilter(filter, query) {
+function addLocalizationFilter(filters, query) {
   if (query.longitude === undefined ||
   query.latitude === undefined) { return; }
-  filter['address.loc'] = {
+  filters['address.loc'] = {
     $nearSphere: {
       $geometry: {
         type : 'Point', coordinates : [
@@ -23,24 +24,38 @@ function addLocalizationFilter(filter, query) {
     }
   };
   if (query.maxDistance !== undefined) {
-    filter['address.loc'].$nearSphere.$maxDistance =
+    filters['address.loc'].$nearSphere.$maxDistance =
       parseFloat(query.maxDistance);
   }
   if (query.minDistance !== undefined) {
-    filter['address.loc'].$nearSphere.$minDistance =
+    filters['address.loc'].$nearSphere.$minDistance =
       parseFloat(query.minDistance);
   }
 }
 
-function addFilter(filter, query) {
-  addLocalizationFilter(filter, query);
-  if (query.city !== undefined) { filter['address.city'] = query.city; }
+function getFilters(query) {
+  var filters = {};
+  addLocalizationFilter(filters, query);
+  if (query.city !== undefined) { filters['address.city'] = query.city; }
+  return filters;
+}
+
+function getFields(query) {
+  if ('string' !== typeof query.fields) { return undefined; }
+  var fields = '';
+  query.fields.split(',').forEach(function(field) {
+    field = field.trim().replace(/^[+-]+/g, '');
+    if (field.length > 0) {
+      fields = util.format('%s %s', fields, field);
+    }
+  });
+  return fields;
 }
 
 apiRouter.get('/', function(req, res, next) {
-  var filter = {};
-  addFilter(filter, req.query);
-  PubModel.find(filter, function(err, pubs) {
+  var filters = getFilters(req.query);
+  var fields = getFields(req.query);
+  PubModel.find(filters, fields, function(err, pubs) {
     if (err) { return next(err); }
     res.send(pubs);
   });

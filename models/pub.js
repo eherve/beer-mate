@@ -1,24 +1,41 @@
 'use strict';
 
 var Schema = require('mongoose').Schema;
+var validate = require('mongoose-validator');
 
-var hourMatch = [ /[0-9]{2}:[03]0/,
-  'Invalid hour format ({VALUE}) for {PATH}.'
+var hourValidator = validate({
+  validator: 'matches',
+  arguments: [ /[0-9]{2}:[03]0/ ],
+  message: 'validator.hour'
+});
+
+var webSiteValidator = [
+  validate({
+    validator: 'isURL',
+    arguments: [ { 'allow_underscores': false } ],
+    message: 'validator.webSite'
+  })
 ];
+
+var ratingSchema = new Schema({
+  note: { type: Number },
+  message: { type: String }
+});
 
 var daySchema = {
   open: { type: Boolean },
-  openH: { type: String, match: hourMatch },
-  closeH: { type: String, match: hourMatch },
+  openH: { type: String, validate: hourValidator },
+  closeH: { type: String, validate: hourValidator },
   priceH: { type: Number },
   happyHour: { type: Boolean },
-  openHH: { type: String, match: hourMatch },
-  closeHH: { type: String, match: hourMatch },
+  openHH: { type: String, validate: hourValidator },
+  closeHH: { type: String, validate: hourValidator },
   priceHH: { type: Number }
 };
 
 var schema = new Schema({
   name: { type: String },
+  phone: { type: String },
   address: {
     country: { type: String },
     postalCode: { type: String },
@@ -26,6 +43,7 @@ var schema = new Schema({
     street: { type: String },
     loc: { type: [ Number ], index: '2dsphere' }
   },
+  webSite: { type: String, validate: webSiteValidator },
   days: {
     default: daySchema,
     monday: daySchema,
@@ -37,6 +55,7 @@ var schema = new Schema({
     sunday: daySchema
   },
   currency: { type: String },
+  ratings: [ ratingSchema ],
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   enabled: { type: Boolean },
   validated: { type: Boolean },
