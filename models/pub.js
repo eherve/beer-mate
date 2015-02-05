@@ -24,12 +24,12 @@ var ratingSchema = new Schema({
 
 var daySchema = {
   open: { type: Boolean },
-  openH: { type: String, validate: hourValidator },
-  closeH: { type: String, validate: hourValidator },
+  openH: { type: String },
+  closeH: { type: String },
   priceH: { type: Number },
   happyHour: { type: Boolean },
-  openHH: { type: String, validate: hourValidator },
-  closeHH: { type: String, validate: hourValidator },
+  openHH: { type: String },
+  closeHH: { type: String },
   priceHH: { type: Number }
 };
 
