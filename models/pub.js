@@ -5,7 +5,7 @@ var validate = require('mongoose-validator');
 
 var hourValidator = validate({
   validator: 'matches',
-  arguments: [ /[0-9]{2}:[03]0/ ],
+  arguments: [ /^([01]\d|2[0-3]):?([0-5]\d)$/ ],
   message: 'validator.hour'
 });
 
