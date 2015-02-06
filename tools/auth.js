@@ -23,7 +23,9 @@ module.exports.getToken = function(req) {
 };
 
 module.exports.sendToken = function(res, token) {
-  res.cookie(TOKEN_NAME, token).set(TOKEN_NAME, token).send(token);
+  var data = {};
+  data[TOKEN_NAME] = token;
+  res.cookie(TOKEN_NAME, token).set(TOKEN_NAME, token).send(data);
 };
 
 module.exports.login = function(req, res, next) {
