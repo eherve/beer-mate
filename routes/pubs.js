@@ -109,4 +109,13 @@ viewRouter.get('/datatable', Auth.adminConnected, function(req, res, next) {
   });
 });
 
+apiRouter.delete('/remove', Auth.adminConnected, function(req, res, next) {
+  var ids = req.body.ids;
+  PubModel.remove({ _id: { $in: ids } }, function(err, data) {
+    if (err) { return next(err); }
+    if (data === 0) { return next(new NotFoundError()); }
+    res.end();
+  });
+});
+
 module.exports = { api: apiRouter, view: viewRouter };

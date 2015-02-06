@@ -8,7 +8,7 @@ var DataTable = require('mongoose-datatable');
 var Merge = require('mongoose-merge-plugin');
 var logger = require('./logger').get('Database');
 
-mongoose.set('debug', function (collectionName, method, query) {
+mongoose.set('debug', function(collectionName, method, query) {
   logger.debug(util.format('run mongo collection: %s, method: %s, quey: %s',
     collectionName, method, JSON.stringify(query)));
 });

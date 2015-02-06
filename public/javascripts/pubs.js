@@ -2,30 +2,59 @@
 /*global $:false */
 
 $(document).ready(function() {
+
+  // Editor - remove
+
+  var removeEditor = new $.fn.dataTable.Editor({
+    domTable: '#datatable',
+    title: 'Remove pub',
+    method: 'DELETE',
+    url: '/api/pubs/remove',
+    closeText: 'Close',
+    validateText: 'Remove',
+    idField: '_id',
+    fields: [ { fieldType: 'label', label: 'Delete pub' } ]
+  });
+
+  // Datatable
+
   $('#datatable').dataTable({
+    dom: 'T<"clear">lfrtip',
     bFilter: true,
     bProcessing: true,
     bServerSide: true,
     sAjaxSource: '/pubs/datatable',
     aoColumns: [
       { mData: 'name' },
-      { mRender: function(data, type, full) {
-          return full.address.street + ' ' + full.address.city + ', ' +
-            full.address.country;
-        }
-      },
-      { mData: 'address.loc',
+      { mData: 'address.country'},
+      { mData: 'address.city' },
+      { mData: 'address.street' },
+      { mData: 'address.loc', bSortable: false,
         mRender: function(data) {
           return data && data.length === 2 ?
             ('longitude: ' + data[0] + ', latitude: ' + data[1]) : '';
         }
-      },
-      { mData: 'days', sDefaultContent: '' }, // TODO
-      { mData: 'address.country', bVisible: false },
-      { mData: 'address.city', bVisible: false },
-      { mData: 'address.street', bVisible: false }
+      }
     ],
     fnServerParams: function(aoData) {
-      aoData.push({ name: 'bChunkSearch', value: true }); }
+      aoData.push({ name: 'bChunkSearch', value: true });
+    },
+    tableTools: {
+      sRowSelect: 'multi',
+      fnPreRowSelect: function(event, node) {
+        if (!event) { return true; }
+        if (event && (event.ctrlKey || event.metaKey)) {
+          return true;
+        }
+        this.fnSelectNone();
+        return true;
+      },
+      sSelectedClass: 'active',
+      aButtons: [
+        'select_all', 'select_none',
+        { sExtends: 'remove_button', sButtonText: 'Remove',
+          editor: removeEditor, bIsEnabled: true }
+      ]
+    }
   });
 });

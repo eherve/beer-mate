@@ -17,19 +17,31 @@ var webSiteValidator = [
   })
 ];
 
+var noteValidator = [
+  validate({
+    validator: 'isInt',
+    message: 'validator.int'
+  }),
+  validate({
+    validator: 'isLength',
+    arguments: [ 0, 5 ],
+    message: 'validator.length'
+  })
+];
+
 var ratingSchema = new Schema({
-  note: { type: Number },
+  note: { type: Number, validate: noteValidator },
   message: { type: String }
 });
 
 var daySchema = {
   open: { type: Boolean },
-  openH: { type: String },
-  closeH: { type: String },
+  openH: { type: String, validate: hourValidator },
+  closeH: { type: String, validate: hourValidator },
   priceH: { type: Number },
   happyHour: { type: Boolean },
-  openHH: { type: String },
-  closeHH: { type: String },
+  openHH: { type: String, validate: hourValidator },
+  closeHH: { type: String, validate: hourValidator },
   priceHH: { type: Number }
 };
 

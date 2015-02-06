@@ -52,7 +52,7 @@ apiRouter.delete('/remove', Auth.adminConnected, function(req, res, next) {
   var ids = req.body.ids;
   UserModel.remove({ _id: { $in: ids } }, function(err, data) {
     if (err) { return next(err); }
-    console.log(data);
+    if (data === 0) { return next(new NotFoundError()); }
     res.end();
   });
 });
