@@ -8,7 +8,6 @@ var io = module.exports.io;
 module.exports.connect = function(server) {
   io = socketIo(server);
   registered.forEach(function(reg) {
-  console.log('socketIo connection', reg.path);
     io.of(reg.path).on('connection', reg.cb);
   });
   registered = [];

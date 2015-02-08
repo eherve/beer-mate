@@ -31,7 +31,14 @@ var noteValidator = [
 
 var ratingSchema = new Schema({
   note: { type: Number, validate: noteValidator },
-  message: { type: String }
+  message: { type: String },
+  userId: { type: Schema.Types.ObjectId, ref: 'User' }
+});
+
+var commentSchema = new Schema({
+  title: { type: String },
+  message: { type: String },
+  userId: { type: Schema.Types.ObjectId, ref: 'User' }
 });
 
 var daySchema = {
@@ -68,6 +75,7 @@ var schema = new Schema({
   },
   currency: { type: String },
   ratings: [ ratingSchema ],
+  comments: [ commentSchema ],
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   enabled: { type: Boolean },
   validated: { type: Boolean },
