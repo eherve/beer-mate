@@ -10,7 +10,6 @@ block footer
     var div = $('#logging');
     var socket = io.connect(window.location.host + '/#{id}');
     socket.on('data', function(data) {
-      console.log(data);
       var row = $('<div></div>').addClass('row');
       div.prepend(row);
       var time = $('<div></div>').addClass('col-md-2').addClass('logging-time')
@@ -22,8 +21,13 @@ block footer
       var logger = $('<div></div>').addClass('col-md-1').addClass('logging-logger')
         .html(data.logger);
       row.append(logger);
+
+      var m = data.msg;
+      if (data.meta && Object.keys(data.meta).length > 0) {
+        m += ' ' + JSON.stringify(data.meta);
+      }
       var msg = $('<div></div>').addClass('col-md-8').addClass('logging-msg')
-        .html(data.msg);
+        .html(m);
       row.append(msg);
     });
 
