@@ -2,12 +2,12 @@
 
 var express = require('express');
 var router = express.Router();
-var Auth = require('../tools/auth');
+var Auth = require('../../tools/auth');
 var uuid = require('node-uuid');
-var SocketIo = require('../socket.io');
-var LoggerStream = require('../logger').stream;
+var SocketIo = require('../../socket.io');
+var LoggerStream = require('../../logger').stream;
 
-router.get('/logging', Auth.adminConnected, function(req, res) {
+router.get('/', Auth.adminConnected, function(req, res) {
   var id = uuid.v4();
   function connection(socket) {
     SocketIo.removeConnection(id, connection);

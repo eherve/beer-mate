@@ -32,6 +32,6 @@ if (fs.existsSync(faviconFile)) {
 }
 
 // Routes
-require('./router')(app);
+require('./routes')(app);
 
 module.exports = app;

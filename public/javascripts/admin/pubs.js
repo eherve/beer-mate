@@ -9,7 +9,7 @@ $(document).ready(function() {
     domTable: '#datatable',
     title: 'Remove pub',
     method: 'DELETE',
-    url: '/api/pubs/remove',
+    url: '/admin/pubs/remove',
     closeText: 'Close',
     validateText: 'Remove',
     idField: '_id',
@@ -23,7 +23,7 @@ $(document).ready(function() {
     bFilter: true,
     bProcessing: true,
     bServerSide: true,
-    sAjaxSource: '/pubs/datatable',
+    sAjaxSource: '/admin/pubs/datatable',
     aoColumns: [
       { mData: 'name' },
       { mData: 'address.country'},

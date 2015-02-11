@@ -29,7 +29,7 @@ module.exports = function(grunt) {
     watch: {
       all: {
         files: FILES.watch.all,
-        tasks: [ 'newer:jshint:all', 'watch:all' ],
+        tasks: [ 'jshint:all', 'watch:all' ],
         options: { }
       },
       server: {

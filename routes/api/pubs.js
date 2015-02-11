@@ -2,14 +2,11 @@
 
 var util = require('util');
 var express = require('express');
-var apiRouter = express.Router();
-var viewRouter = express.Router();
+var router = express.Router();
 var NotFoundError = require('../errors/notFoundError');
 var Auth = require('../tools/auth');
 var ObjectId = require('mongoose').Types.ObjectId;
 var PubModel = require('../models/pub');
-
-/* API */
 
 function addLocalizationFilter(filters, query) {
   if (query.longitude === undefined ||
@@ -52,7 +49,7 @@ function getFields(query) {
   return fields;
 }
 
-apiRouter.get('/', function(req, res, next) {
+router.get('/', function(req, res, next) {
   var filters = getFilters(req.query);
   var fields = getFields(req.query);
   PubModel.find(filters, fields, function(err, pubs) {
@@ -61,7 +58,7 @@ apiRouter.get('/', function(req, res, next) {
   });
 });
 
-apiRouter.post('/', Auth.userConnected, function(req, res, next) {
+router.post('/', Auth.userConnected, function(req, res, next) {
   var pub = new PubModel(req.body);
   pub.userId = req.redisData.userId;
   pub.createdAt = Date.now();
@@ -71,7 +68,7 @@ apiRouter.post('/', Auth.userConnected, function(req, res, next) {
   });
 });
 
-apiRouter.get('/:pubId', function(req, res, next) {
+router.get('/:pubId', function(req, res, next) {
   var id = req.params.pubId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   PubModel.findById(id, function(err, pub) {
@@ -81,7 +78,7 @@ apiRouter.get('/:pubId', function(req, res, next) {
   });
 });
 
-apiRouter.put('/:pubId', Auth.userConnected, function(req, res, next) {
+router.put('/:pubId', Auth.userConnected, function(req, res, next) {
   var id = req.params.pubId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   PubModel.findById(id, function(err, pub) {
@@ -96,26 +93,4 @@ apiRouter.put('/:pubId', Auth.userConnected, function(req, res, next) {
   });
 });
 
-/* View */
-
-viewRouter.get('/', Auth.adminConnected, function(req, res) {
-  res.render('pubs');
-});
-
-viewRouter.get('/datatable', Auth.adminConnected, function(req, res, next) {
-  PubModel.dataTable(req.query, function(err, data) {
-    if(err) { return next(err); }
-    res.send(data);
-  });
-});
-
-apiRouter.delete('/remove', Auth.adminConnected, function(req, res, next) {
-  var ids = req.body.ids;
-  PubModel.remove({ _id: { $in: ids } }, function(err, data) {
-    if (err) { return next(err); }
-    if (data === 0) { return next(new NotFoundError()); }
-    res.end();
-  });
-});
-
-module.exports = { api: apiRouter, view: viewRouter };
+module.exports = router;

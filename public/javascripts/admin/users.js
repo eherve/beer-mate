@@ -20,7 +20,7 @@ $(document).ready(function() {
     domTable: '#datatable',
     title: 'Remove user',
     method: 'DELETE',
-    url: '/api/users/remove',
+    url: '/admin/users/remove',
     closeText: 'Close',
     validateText: 'Remove',
     idField: '_id',
@@ -34,7 +34,7 @@ $(document).ready(function() {
     bFilter: true,
     bProcessing: true,
     bServerSide: true,
-    sAjaxSource: '/users/datatable',
+    sAjaxSource: '/admin/users/datatable',
     aoColumns: [
       { mData: 'email' },
       { mData: 'validated', sDefaultContent: '' },
