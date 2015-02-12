@@ -3,15 +3,17 @@
 var Schema = require('mongoose').Schema;
 var validate = require('mongoose-validator');
 
-var hourValidator = validate({
-  validator: 'matches',
-  arguments: [ /^([01]\d|2[0-3]):?([0-5]\d)$/ ],
-  passIfEmpty: true,
-  message: 'validator.hour'
-});
+var hourValidator = [
+  validate({
+    validator: 'matches',
+    arguments: [ /^([01]\d|2[0-3]):?([0-5]\d)$/ ],
+    passIfEmpty: true,
+    message: 'validator.hour'
+  })
+];
 
 var webSiteValidator = [
-  validate({
+validate({
     validator: 'isURL',
     arguments: [ { 'allow_underscores': false } ],
     passIfEmpty: true,
