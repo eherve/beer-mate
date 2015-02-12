@@ -6,6 +6,7 @@ var validate = require('mongoose-validator');
 var hourValidator = validate({
   validator: 'matches',
   arguments: [ /^([01]\d|2[0-3]):?([0-5]\d)$/ ],
+  passIfEmpty: true,
   message: 'validator.hour'
 });
 
@@ -13,6 +14,7 @@ var webSiteValidator = [
   validate({
     validator: 'isURL',
     arguments: [ { 'allow_underscores': false } ],
+    passIfEmpty: true,
     message: 'validator.webSite'
   })
 ];
@@ -20,11 +22,13 @@ var webSiteValidator = [
 var noteValidator = [
   validate({
     validator: 'isInt',
+    passIfEmpty: true,
     message: 'validator.int'
   }),
   validate({
     validator: 'isLength',
     arguments: [ 0, 5 ],
+    passIfEmpty: true,
     message: 'validator.length'
   })
 ];
