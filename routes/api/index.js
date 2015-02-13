@@ -10,4 +10,4 @@ module.exports = function(app) {
   app.use('/api/users', user);
   app.use('/api/pubs', pub);
 
-}
+};

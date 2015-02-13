@@ -3,19 +3,12 @@
 var express = require('express');
 var router = express.Router();
 var util = require('util');
-var uuid = require('node-uuid');
 var logger = require('../../logger').get('Route');
-var NotFoundError = require('../../errors/notFoundError');
 var UnauthorizedError = require('../../errors/unauthorizedError');
 var ForbiddenError = require('../../errors/forbiddenError');
 var BadRequestError = require('../../errors/badRequestError');
-var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../../models/user');
-var Resource = require('../../resource');
-var Email = require('../../email');
 var Auth = require('../../tools/auth');
-
-var CONFIRM_EXPIRATION_DELAY = 24 * 60 * 60 * 1000;
 
 // Login
 

@@ -3,7 +3,6 @@
 var util = require('util');
 var express = require('express');
 var router = express.Router();
-var viewRouter = express.Router();
 var NotFoundError = require('../../errors/notFoundError');
 var Auth = require('../../tools/auth');
 var ObjectId = require('mongoose').Types.ObjectId;

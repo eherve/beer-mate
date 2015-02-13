@@ -12,4 +12,4 @@ module.exports = function(app) {
   app.use('/admin/users', user);
   app.use('/admin/pubs', pub);
 
-}
+};
