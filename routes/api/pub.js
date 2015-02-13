@@ -8,6 +8,8 @@ var Auth = require('../../tools/auth');
 var ObjectId = require('mongoose').Types.ObjectId;
 var PubModel = require('../../models/pub');
 
+var ALLOWED_MERGE_FIELD = 'name phone address webSite days currency';
+
 function addLocalizationFilter(filters, query) {
   if (query.longitude === undefined ||
   query.latitude === undefined) { return; }
@@ -59,6 +61,8 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/', Auth.userConnected, function(req, res, next) {
+  req.body.ratings = [];
+  req.body.comments = [];
   var pub = new PubModel(req.body);
   pub.userId = req.redisData.id;
   pub.save(function(err) {
@@ -84,7 +88,7 @@ router.put('/:pubId', Auth.userConnected, function(req, res, next) {
   PubModel.findById(id, function(err, pub) {
     if (err) { return next(err); }
     if (!pub) { return next(new NotFoundError()); }
-    pub.merge(req.body, { fields: 'name days currency' });
+    pub.merge(req.body, { fields: ALLOWED_MERGE_FIELD });
     pub.updatedAt = Date.now();
     pub.save(function(err) {
       if (err) { return next(err); }
