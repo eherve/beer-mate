@@ -3,7 +3,7 @@
 function modifyAccount(cb) {
   var UserModel = require('../models/user');
   UserModel.findOne({ email: 'admin@beermate.com' }, function(err, user) {
-    if (err) { return (err); }
+    if (err) { return cb(err); }
     user.email = 'darko@beermate.io';
     user.password = 'darko42';
     user.validated = true;

@@ -26,25 +26,21 @@ var noteValidator = [
     validator: 'isInt',
     passIfEmpty: true,
     message: 'validator.int'
-  }),
-  validate({
-    validator: 'isLength',
-    arguments: [ 0, 5 ],
-    passIfEmpty: true,
-    message: 'validator.length'
   })
 ];
 
 var ratingSchema = new Schema({
-  note: { type: Number, validate: noteValidator },
-  message: { type: String },
-  userId: { type: Schema.Types.ObjectId, ref: 'User' }
+  note: { type: Number, validate: noteValidator, required: true,
+    min: 0, max: 5 },
+  createdAt: { type: Date, default: Date.now, required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
 var commentSchema = new Schema({
-  title: { type: String },
-  message: { type: String },
-  userId: { type: Schema.Types.ObjectId, ref: 'User' }
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now, required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
 var daySchema = {
@@ -66,7 +62,7 @@ var schema = new Schema({
     postalCode: { type: String },
     city: { type: String },
     street: { type: String },
-    loc: { type: [ Number ], index: '2dsphere' }
+    loc: { type: [ Number ], index: '2dsphere', required: true }
   },
   webSite: { type: String, validate: webSiteValidator },
   days: {
@@ -82,11 +78,11 @@ var schema = new Schema({
   currency: { type: String },
   ratings: [ ratingSchema ],
   comments: [ commentSchema ],
-  userId: { type: Schema.Types.ObjectId, ref: 'User' },
-  enabled: { type: Boolean },
-  validated: { type: Boolean },
-  createdAt: { type: Date },
-  updatedAt: { type: Date }
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  enabled: { type: Boolean, default: true, required: true },
+  validated: { type: Boolean, default: false, required: true },
+  createdAt: { type: Date, default: Date.now, required: true },
+  updatedAt: { type: Date, default: Date.now, required: true }
 });
 
 /*

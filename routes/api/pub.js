@@ -60,8 +60,7 @@ router.get('/', function(req, res, next) {
 
 router.post('/', Auth.userConnected, function(req, res, next) {
   var pub = new PubModel(req.body);
-  pub.userId = req.redisData.userId;
-  pub.createdAt = Date.now();
+  pub.userId = req.redisData.id;
   pub.save(function(err) {
     if (err) { return next(err); }
     res.end();
@@ -71,7 +70,8 @@ router.post('/', Auth.userConnected, function(req, res, next) {
 router.get('/:pubId', function(req, res, next) {
   var id = req.params.pubId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  PubModel.findById(id, function(err, pub) {
+  var fields = getFields(req.query);
+  PubModel.findById(id, fields, function(err, pub) {
     if (err) { return next(err); }
     if (!pub) { return next(new NotFoundError()); }
     res.send(pub);
@@ -86,6 +86,64 @@ router.put('/:pubId', Auth.userConnected, function(req, res, next) {
     if (!pub) { return next(new NotFoundError()); }
     pub.merge(req.body, { fields: 'name days currency' });
     pub.updatedAt = Date.now();
+    pub.save(function(err) {
+      if (err) { return next(err); }
+      res.end();
+    });
+  });
+});
+
+/* Comments */
+
+router.get('/:pubId/comments', function(req, res, next) {
+  var id = req.params.pubId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  PubModel.findById(id, 'comments', function(err, pub) {
+    if (err) { return next(err); }
+    res.send(pub.comments);
+  });
+});
+
+router.post('/:pubId/comments', Auth.userConnected, function(req, res, next) {
+  var id = req.params.pubId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  PubModel.findById(id, 'comments', function(err, pub) {
+    if (err) { return next(err); }
+    req.body.userId = req.redisData.id;
+    pub.comments.push(req.body);
+    pub.save(function(err) {
+      if (err) { return next(err); }
+      res.end();
+    });
+  });
+});
+
+/* Ratings */
+
+router.get('/:pubId/ratings', function(req, res, next) {
+  var id = req.params.pubId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  PubModel.findById(id, 'ratings', function(err, pub) {
+    if (err) { return next(err); }
+    res.send(pub.ratings);
+  });
+});
+
+router.post('/:pubId/ratings', Auth.userConnected, function(req, res, next) {
+  var id = req.params.pubId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  PubModel.findById(id, 'ratings', function(err, pub) {
+    if (err) { return next(err); }
+    var userId = req.redisData.id;
+    // Unicity on the user for the rating
+    for (var index = 0; index < pub.ratings.length; ++index) {
+      var rating = pub.ratings[index];
+      if (rating && rating.userId && rating.userId.equals(userId)) {
+        return next(new Error('User has already rated the pub !'));
+      }
+    }
+    req.body.userId = userId;
+    pub.ratings.push(req.body);
     pub.save(function(err) {
       if (err) { return next(err); }
       res.end();
