@@ -1,4 +1,5 @@
 {
+  "bufferSize": 100,
   "outputs": {
     "console": {
       "level": "debug", "colorize": true, "timestamp": true,

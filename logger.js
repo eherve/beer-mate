@@ -9,15 +9,25 @@ var events = require('events');
 var CBuffer = require('CBuffer');
 var FileTool = require('./tools/file');
 
+var LOGGING_BUFFER_SIZE = 25;
+
+var stream;
 var settings;
 var loggers = {};
 
 /* Log Streaming */
 function Stream() {
   events.EventEmitter.call(this);
-  this.cbuffer = new CBuffer(25);
+  this.cbuffer = new CBuffer(LOGGING_BUFFER_SIZE);
 }
 util.inherits(Stream, events.EventEmitter);
+Stream.prototype.setBufferSize = function(size) {
+  var previous = this.cbuffer;
+  this.cbuffer = new CBuffer(size);
+  previous.forEach(function(data) {
+    this.cbuffer.push(data);
+  });
+};
 Stream.prototype.history = function() {
   return this.cbuffer;
 };
@@ -85,6 +95,7 @@ module.exports.get = function(name) {
 
 module.exports.configure = function(options) {
   settings = options;
+  if (settings.bufferSize) { stream.setBufferSize(settings.bufferSize); }
 };
 
 module.exports.expressLogger = function(req, res, next) {
