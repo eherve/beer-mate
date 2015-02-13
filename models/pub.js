@@ -3,21 +3,35 @@
 var Schema = require('mongoose').Schema;
 var validate = require('mongoose-validator');
 
+var nameValidator = [
+  validate({
+    validator: 'isLength',
+    arguments: [2, 50],
+    message: 'validator.name.size'
+  }),
+  validate({
+    validator: 'matches',
+    arguments: [ /^[a-zA-Z0-9_-]+$/ ],
+    passIfEmpty: true,
+    message: 'validator.name.format'
+  })
+];
+
 var hourValidator = [
   validate({
     validator: 'matches',
     arguments: [ /^([01]\d|2[0-3]):?([0-5]\d)$/ ],
     passIfEmpty: true,
-    message: 'validator.hour'
+    message: 'validator.hour.format'
   })
 ];
 
 var webSiteValidator = [
 validate({
     validator: 'isURL',
-    arguments: [ { 'allow_underscores': false } ],
+    arguments: [ { 'allow_underscores': true } ],
     passIfEmpty: true,
-    message: 'validator.webSite'
+    message: 'validator.web-site'
   })
 ];
 
@@ -25,7 +39,7 @@ var noteValidator = [
   validate({
     validator: 'isInt',
     passIfEmpty: true,
-    message: 'validator.int'
+    message: 'validator.note'
   })
 ];
 
@@ -55,7 +69,7 @@ var daySchema = {
 };
 
 var schema = new Schema({
-  name: { type: String },
+  name: { type: String, required: true, validate: nameValidator },
   phone: { type: String },
   address: {
     country: { type: String },
