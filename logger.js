@@ -75,22 +75,30 @@ module.exports.get = function(name) {
   if (!settings || !settings.outputs) { return logger; }
   if (settings.outputs.console) {
     addConsoleOutput(logger, settings.outputs.console);
+    if (settings.levels && settings.levels[name] &&
+        settings.levels[name].console) {
+      logger.transports.console.level = settings.levels[name].console;
+    }
   }
   if (settings.outputs.file) {
     addFileOutput(logger, settings.outputs.file);
+    if (settings.levels && settings.levels[name] &&
+        settings.levels[name].file) {
+      logger.transports.console.level = settings.levels[name].file;
+    }
   }
-		// START FIXME: should be fixed in next winston version
-    var oldLogger = logger.log;
-    logger.log = function() {
-      for (var index = 0; index < arguments.length; ++index) {
-        if (util.isError(arguments[index])) {
-          arguments[index] = arguments[index].message;
-        }
+  // START FIXME: should be fixed in next winston version
+  var oldLogger = logger.log;
+  logger.log = function() {
+    for (var index = 0; index < arguments.length; ++index) {
+      if (util.isError(arguments[index])) {
+        arguments[index] = arguments[index].message;
       }
-      oldLogger.apply(this, arguments);
-		};
-		//  END  FIXME
-		return logger;
+    }
+    oldLogger.apply(this, arguments);
+  };
+  //  END  FIXME
+  return logger;
 };
 
 module.exports.configure = function(options) {
@@ -114,3 +122,48 @@ module.exports.expressLogger = function(req, res, next) {
   next();
 };
 
+module.exports.getLevels = function(name) {
+  if (name !== undefined) {
+    var logger = loggers[name]; var level = {};
+    if (logger && logger.transports.console) {
+      level.console = logger.transports.console.level;
+    }
+    if (logger && logger.transports.file) {
+      level.file = logger.transports.file.level;
+    }
+    return level;
+  }
+  var levels = {};
+  Object.keys(loggers).forEach(function(lvl) {
+    var logger = loggers[lvl]; var level = levels[lvl] = {};
+    if (logger.transports.console) {
+      level.console = logger.transports.console.level;
+    }
+    if (logger.transports.file) {
+      level.file = logger.transports.file.level;
+    }
+  });
+  return levels;
+};
+
+module.exports.setLevels = function(name, transport, level) {
+  if (arguments.length === 2) {
+    level = transport; transport = name; name = undefined;
+  }
+  if (arguments.length === 1) {
+    level = name; transport = undefined; name = undefined;
+  }
+  var lgs = [];
+  if (name !== undefined) { lgs.push(loggers[name]); }
+  else {
+    Object.keys(loggers).forEach(function(key) { lgs.push(loggers[key]); });
+  }
+  lgs.forEach(function(l) {
+    if (transport !== undefined) {
+      if (l.transports[transport]) { l.transports[transport].level = level; }
+    } else {
+      if (l.transports.console) { l.transports.console.level = level; }
+      if (l.transports.file) { l.transports.file.level = level; }
+    }
+  });
+};

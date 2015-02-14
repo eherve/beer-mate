@@ -20,7 +20,7 @@ $(document).ready(function() {
     domTable: '#datatable',
     title: 'Remove user',
     method: 'DELETE',
-    url: '/admin/users/remove',
+    url: 'users/remove',
     closeText: 'Close',
     validateText: 'Remove',
     idField: '_id',

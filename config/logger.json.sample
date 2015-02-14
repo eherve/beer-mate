@@ -5,5 +5,8 @@
       "level": "debug", "colorize": true, "timestamp": true,
       "dumpExceptions": true, "showStack": true
     }
+  },
+  "levels": {
+    "I18n": { "console": "info" }
   }
 }

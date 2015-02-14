@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  h1 Logger
+  div#loggers
+    each info, logger in levels
+      div.row.logger
+        div.col-md-2.logger-name
+          p=logger
+        div.col-md-10.logger-info
+          each level, transport in info
+            div.row.transport
+              div.col-md-2.logger-info-transport
+                p=transport
+              select.col-md-2.logger-info-level
+                option(selected=(level=='error'), logger=logger, transport=transport, name="error", value="error")=__i('logger.level.error')
+                option(selected=(level=='warn'), logger=logger, transport=transport, name="warn", value="warn")=__i('logger.level.warn')
+                option(selected=(level=='info'), logger=logger, transport=transport, name="info", value="info")=__i('logger.level.info')
+                option(selected=(level=='debug'), logger=logger, transport=transport, name="debug", value="debug")=__i('logger.level.debug')
+
+block footer
+  script(type='text/javascript', src='/javascripts/admin/logger.js')

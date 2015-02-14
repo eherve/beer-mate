@@ -1,3 +1,7 @@
 {
-	"email.confirmation": "Email de Confirmation"
+	"email.confirmation": "Email de Confirmation",
+	"logger.level.error": "erreur",
+	"logger.level.warn": "avertissement",
+	"logger.level.info": "information",
+	"logger.level.debug": "debug"
 }

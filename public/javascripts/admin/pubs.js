@@ -9,7 +9,7 @@ $(document).ready(function() {
     domTable: '#datatable',
     title: 'Remove pub',
     method: 'DELETE',
-    url: '/admin/pubs/remove',
+    url: 'pubs/remove',
     closeText: 'Close',
     validateText: 'Remove',
     idField: '_id',

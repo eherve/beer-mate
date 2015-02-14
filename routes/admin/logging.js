@@ -25,5 +25,4 @@ router.get('/', Auth.adminConnected, function(req, res) {
   res.render('admin/logging', { id: id });
 });
 
-
 module.exports = router;
