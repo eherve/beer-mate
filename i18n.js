@@ -62,7 +62,7 @@ function loadLocale(l) {
 function isValidLocales(options) {
   return options.locales &&
     util.isArray(options.locales) &&
-    options.locales.length === 0;
+    options.locales.length > 0;
 }
 
 function setDefaultLocale(options) {
