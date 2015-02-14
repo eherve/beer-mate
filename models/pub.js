@@ -43,6 +43,14 @@ var noteValidator = [
   })
 ];
 
+var ratingValidator = [
+  validate({
+    validator: 'isInt',
+    passIfEmpty: true,
+    message: 'validator.rating'
+  })
+];
+
 var ratingSchema = new Schema({
   note: { type: Number, validate: noteValidator, required: true,
     min: 0, max: 5 },
@@ -91,7 +99,9 @@ var schema = new Schema({
   },
   currency: { type: String },
   ratings: [ ratingSchema ],
+  rating: { type: Number, validate: ratingValidator, min: 0, max: 5 },
   comments: [ commentSchema ],
+  nbComments: { type: Number, min: 0, default: 0 },
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   enabled: { type: Boolean, default: true, required: true },
   validated: { type: Boolean, default: false, required: true },

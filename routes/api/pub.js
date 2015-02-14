@@ -115,6 +115,7 @@ router.post('/:pubId/comments', Auth.userConnected, function(req, res, next) {
     if (err) { return next(err); }
     req.body.userId = req.redisData.id;
     pub.comments.push(req.body);
+    pub.nbComments = pub.nbComments + 1;
     pub.save(function(err) {
       if (err) { return next(err); }
       res.end();
@@ -139,15 +140,18 @@ router.post('/:pubId/ratings', Auth.userConnected, function(req, res, next) {
   PubModel.findById(id, 'ratings', function(err, pub) {
     if (err) { return next(err); }
     var userId = req.redisData.id;
-    // Unicity on the user for the rating
+    // Unicity on the user for the rating and avg
+    var avg = 0;
     for (var index = 0; index < pub.ratings.length; ++index) {
       var rating = pub.ratings[index];
       if (rating && rating.userId && rating.userId.equals(userId)) {
         return next(new Error('User has already rated the pub !'));
       }
+      avg = avg + rating.note;
     }
     req.body.userId = userId;
     pub.ratings.push(req.body);
+    pub.rating = (avg + parseInt(req.body.note)) / pub.ratings.length;
     pub.save(function(err) {
       if (err) { return next(err); }
       res.end();
