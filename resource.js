@@ -28,7 +28,7 @@ function getFilePath(folder, filename, locale, tmpl) {
 function getPath(folder, filename, locale, tmpl, cb) {
   var cacheKey = generateCacheKey(folder, filename, locale);
   var c = cache[cacheKey];
-  if (c) { return cb(null, c); }
+  if (c) { return cb(null, c); }
   var file = getFilePath(folder, filename, locale, tmpl);
   fs.exists(file, function(exists) {
     if (exists) { cache[cacheKey] = file; return cb(null, file); }
@@ -38,7 +38,7 @@ function getPath(folder, filename, locale, tmpl, cb) {
     }
     logger.warn(util.format(NO_FILE_MSG_TMPL, file));
     getPath(folder, filename, defaultLocale, tmpl, function(err, file) {
-      if (err) { return cb(err); }
+      if (err) { return cb(err); }
       cache[cacheKey] = file; cb(null, file);
     });
   });
@@ -47,7 +47,7 @@ function getPath(folder, filename, locale, tmpl, cb) {
 function getPathSync(folder, filename, locale, tmpl) {
   var cacheKey = generateCacheKey(folder, filename, locale);
   var c = cache[cacheKey];
-  if (c) { return c; }
+  if (c) { return c; }
   var file = getFilePath(folder, filename, locale, tmpl);
   if (fs.existsSync(file)) { return (cache[cacheKey] = file); }
   if (locale === defaultLocale) {

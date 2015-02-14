@@ -19,7 +19,9 @@ function getRedisData(token, cb) {
 }
 
 module.exports.getToken = function(req) {
-  return req.get(TOKEN_NAME) || req.cookies[TOKEN_NAME] || req.query[TOKEN_NAME];
+  return req.get(TOKEN_NAME) ||
+    req.cookies[TOKEN_NAME] ||
+    req.query[TOKEN_NAME];
 };
 
 module.exports.sendToken = function(res, token) {

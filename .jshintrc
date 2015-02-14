@@ -17,7 +17,13 @@
   "strict": true,
   "trailing": true,
   "smarttabs": true,
-  "globals": {
-    "angular": false
-  }
+  "globals": {},
+
+  "immed": true,
+  "maxlen": 80,
+  "maxparams": 5,
+  "nonbsp": true,
+  "nonew": true,
+  "notypeof": true,
+  "maxcomplexity": 10
 }

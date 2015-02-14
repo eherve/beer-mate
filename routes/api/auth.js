@@ -80,7 +80,8 @@ router.get('/confirm/:userId/:token', function(req, res, next) {
   UserModel.findById(id, function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
-    if (user.validated === true) { return res.end(); } // TODO validate ok page ?
+    // TODO validate ok page ?
+    if (user.validated === true) { return res.end(); }
     if (user.validation.token !== req.params.token ||
       user.validation.expires < Date.now()) {
         return next(new NotFoundError());

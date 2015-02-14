@@ -2,6 +2,7 @@
 
 'use strict';
 
+var util = require('util');
 var path = require('path');
 
 var loggers = require('../logger');
@@ -49,7 +50,8 @@ database.connect(databaseConfig, function(err) {
     var appConfig = require('../config/application.json');
     app.set('port', process.env.PORT || appConfig.port || 9000);
     var server = app.listen(app.get('port'), function() {
-        logger.info('Express server listening on port ' + server.address().port);
+        logger.info(util.format('Express server listening on port %s',
+          server.address().port));
         require('../socket.io').connect(server);
     });
  });

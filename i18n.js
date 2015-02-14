@@ -59,19 +59,26 @@ function loadLocale(l) {
   } catch(err) { logger.error(err); }
 }
 
-module.exports.configure = function(options) {
-  options = options || {};
-  logger.debug(util.format('configure(%s)', JSON.stringify(options)));
-  if (!options.locales || !util.isArray(options.locales) ||
-      options.locales.length === 0) {
-    return logger.error('No possible locales specified !');
-  }
+function isValidLocales(options) {
+  return options.locales &&
+    util.isArray(options.locales) &&
+    options.locales.length === 0;
+}
+
+function setDefaultLocale(options) {
   if ('string' === typeof options.defaultLocale) {
     defaultLocale = options.defaultLocale;
   } else { defaultLocale = options.locales[0]; }
-  if ('string' === typeof options.directory) {
-    directory = options.directory;
+}
+
+module.exports.configure = function(options) {
+  options = options || {};
+  logger.debug(util.format('configure(%s)', JSON.stringify(options)));
+  if (!isValidLocales(options)) {
+    return logger.error('No possible locales specified !');
   }
+  setDefaultLocale(options);
+  if ('string' === typeof options.directory) { directory = options.directory; }
   if (!fs.existsSync(directory)) {
     return logger.error(
         util.format('Directory %s does not exists !', directory));

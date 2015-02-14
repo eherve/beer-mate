@@ -3,12 +3,25 @@
 var RELOAD_WAITING_TIMEOUT = 1500;
 var FILES = {
   jshint: {
-    all: [ '*.js', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'tools/{,*/}*.js', 'errors/{,*/}*.js', 'public/{,*/}*.js', 'bin/www', 'upgrades/{,*/}*.js' ],
-    server: [ '*.js', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'tools/{,*/}*.js', 'errors/{,*/}*.js', 'bin/www', 'upgrades/{,*/}*.js' ]
+    all: [
+      '*.js', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'tools/{,*/}*.js',
+      'errors/{,*/}*.js', 'public/{,*/}*.js', 'bin/www', 'upgrades/{,*/}*.js'
+    ],
+    server: [
+      '*.js', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'tools/{,*/}*.js',
+      'errors/{,*/}*.js', 'bin/www', 'upgrades/{,*/}*.js'
+    ]
   },
   watch: {
-    all: [ '*.js', 'config/*.{json}', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'tools/{,*/}*.js', 'errors/{,*/}*.js', 'public/{,*/}*.js', 'bin/www', 'upgrades/{,*/}*.js' ],
-    server: [ '*.js', 'config/{,*/}*.json', 'routes/{,*/}*.js', 'models/{,*/}*.js', 'tools/{,*/}*.js', 'errors/{,*/}*.js', 'bin/www', 'upgrades/{,*/}*.js' ]
+    all: [
+      '*.js', 'config/*.{json}', 'routes/{,*/}*.js', 'models/{,*/}*.js',
+      'tools/{,*/}*.js', 'errors/{,*/}*.js', 'public/{,*/}*.js', 'bin/www',
+      'upgrades/{,*/}*.js'
+    ],
+    server: [
+      '*.js', 'config/{,*/}*.json', 'routes/{,*/}*.js', 'models/{,*/}*.js',
+      'tools/{,*/}*.js', 'errors/{,*/}*.js', 'bin/www', 'upgrades/{,*/}*.js'
+    ]
   }
 };
 
@@ -37,7 +50,8 @@ module.exports = function(grunt) {
         tasks: [ 'express:dev', 'wait', 'newer:jshint:server' ],
         options: {
           livereload: true,
-          nospawn: true // Without this option specified express won't be reloaded
+          // Without this option specified express won't be reloaded
+          nospawn: true
         }
       }
     },

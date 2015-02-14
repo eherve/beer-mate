@@ -6,6 +6,8 @@ var crypto = require('crypto');
 var SALT_RANDOM_SIZE = 16;
 var HASH_ITERATION = 420;
 var HASH_LEN = 512;
+var PASSWD_RANDOM_POSSIBILITIES =
+'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%*()_-+=*';
 
 var emailValidator = [
   validate({
@@ -57,7 +59,7 @@ schema.pre('save', function(next) {
  */
 
 schema.statics.generateRandomPassword = function() {
-  var a = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%*()_-+=*';
+var a = PASSWD_RANDOM_POSSIBILITIES;
   var pass = '';
   for (var index = 0; index < 10; ++index) {
     pass += a[parseInt((Math.random() * 1000) % a.length)];
