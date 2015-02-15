@@ -35,10 +35,11 @@ router.get('/:userId', Auth.adminConnected, function(req, res, next) {
 
 router.post('/:userId/change-password', function(req, res, next) {
   var id = req.params.userId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+
   var oldpass = req.body.oldPass;
   var newpass = req.body.newPass;
   if (oldpass === newpass) {return next(new ForbiddenError()); }
-  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   UserModel.findById(id, function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
@@ -49,5 +50,44 @@ router.post('/:userId/change-password', function(req, res, next) {
     });
   });
 });             
+
+router.post('/:userId/request-reset', function(req, res, next) {
+  var id = req.params.userId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+
+  var oldpass = req.body.oldPass;
+  var newpass = req.body.newPass;
+  UserModel.findById(id, '+password +salt', function(err, user) {
+    if (err) { return next(err); }
+    if (!user) { return next(new NotFoundError()); }
+    user.comparePassword(oldpass, function(err, valid) {
+      if (err) { return next(err); }
+      if (valid) {
+        user.passwordreset = {password: newpass};
+        user.save(function(err) {
+          if (err) { return next(err); }
+          res.end();
+        });
+      } else {
+        return next(new ForbiddenError());
+      }
+    });
+  });
+});
+
+router.get('/:userId/password-reset', function(req, res, next) {
+  var id = req.params.userId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  
+  UserModel.findById(id, '+passwordreset.password', function(err, user) {
+    if (err) { return next(err); }
+    if (!user) { return next(new NotFoundError()); }
+    user.password = user.passwordreset.password;
+    user.save(function(err) {
+      if (err) { return next(err); }
+      res.end();
+    });
+  });  
+});
 
 module.exports = router;

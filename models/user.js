@@ -19,8 +19,12 @@ var emailValidator = [
 var schema = new Schema({
   name: { type: String },
   surname: { type: String },
-	email: { type: String, required: true, validate: emailValidator },
+  email: { type: String, required: true, validate: emailValidator },
   password: { type: String, select: false, required: true },
+  passwordreset: {
+    date: {type: Date, select: false},
+    password: {type: String, select: false}
+  },
   salt: { type: String, select: false },
   administrator: { type: Boolean, default: false },
   validated: { type: Boolean, default: false },
@@ -33,24 +37,47 @@ var schema = new Schema({
 /*
  * Middlewares
  */
+function cryptPassword(password, salt, cb) {
+  if (!salt || salt === 'undefined' || salt.trim() === '') {
+    try {
+      // generate a salt
+      salt = crypto.createHash('md5').update(
+        crypto.randomBytes(SALT_RANDOM_SIZE).toString('hex')).digest('hex');
+    } catch (ex) { return cb(ex); }    
+  }
+  crypto.pbkdf2(password, salt, HASH_ITERATION, HASH_LEN, function(err, hash) {
+    if (err) { return cb(err); }
+    password = (new Buffer(hash, 'binary')).toString('hex');
+    cb(null, {salt: salt, password: password});
+  }); 
+}
 
 schema.pre('save', function(next) {
   var user = this;
-  if (!user.isModified('password')) { return next(); }
+  
+  if (!user.isModified('password') && !user.isModified('passwordreset')) {
+    return next();
+  }
+  if (user.isModified('password') &&
+      user.password === user.passwordreset.password) {
+    user.passwordreset = {};
+    return next();
+  }
   process.nextTick(function() {
-  var salt;
-    try {
-      // generate a salt
-      salt = user.salt = crypto.createHash('md5').update(
-        crypto.randomBytes(SALT_RANDOM_SIZE).toString('hex')).digest('hex');
-    } catch (ex) { return next(ex); }
-    // hash password
-    crypto.pbkdf2(user.password, salt, HASH_ITERATION, HASH_LEN,
-      function(err, hash) {
-        if (err) { return next(err); }
-        user.password = (new Buffer(hash, 'binary')).toString('hex');
-        next();
-      });
+    var passwordToCrypt = (user.isModified('password') ?
+                           user.password :
+                           user.passwordreset.password);
+    cryptPassword(passwordToCrypt, user.salt, function(err, pass) {
+      if (err) {return next(err); }
+      user.salt = pass.salt;
+      if (user.isModified('password')) {
+        user.password = pass.password;
+      } else {
+        user.passwordreset.password = pass.password;
+        user.passwordreset.date = new Date();
+      }
+      next();
+    });
   });
 });
 
