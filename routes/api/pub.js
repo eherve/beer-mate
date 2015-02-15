@@ -61,8 +61,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/', Auth.userConnected, function(req, res, next) {
-  req.body.ratings = [];
-  req.body.comments = [];
+  req.body.ratings = []; req.body.comments = []; req.body.checkIn = [];
   var pub = new PubModel(req.body);
   pub.userId = req.redisData.id;
   pub.save(function(err) {
@@ -152,6 +151,31 @@ router.post('/:pubId/ratings', Auth.userConnected, function(req, res, next) {
     req.body.userId = userId;
     pub.ratings.push(req.body);
     pub.rating = (avg + parseInt(req.body.note)) / pub.ratings.length;
+    pub.save(function(err) {
+      if (err) { return next(err); }
+      res.end();
+    });
+  });
+});
+
+/* CheckIn */
+
+router.get('/:pubId/check-in', function(req, res, next) {
+  var id = req.params.pubId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  PubModel.findById(id, 'checkIn', function(err, pub) {
+    if (err) { return next(err); }
+    res.send(pub.checkIn);
+  });
+});
+
+router.post('/:pubId/check-in', Auth.userConnected, function(req, res, next) {
+  var id = req.params.pubId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  PubModel.findById(id, 'checkIn', function(err, pub) {
+    if (err) { return next(err); }
+    req.body.userId = req.redisData.id;
+    pub.checkIn.push(req.body);
     pub.save(function(err) {
       if (err) { return next(err); }
       res.end();
