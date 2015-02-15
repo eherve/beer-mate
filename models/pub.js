@@ -64,7 +64,6 @@ var ratingSchema = new Schema({
 });
 
 var commentSchema = new Schema({
-  title: { type: String, required: true },
   message: { type: String, required: true },
   createdAt: { type: Date, default: Date.now, required: true },
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true }
