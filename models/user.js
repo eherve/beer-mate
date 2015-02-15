@@ -23,7 +23,8 @@ var schema = new Schema({
   password: { type: String, select: false, required: true },
   passwordreset: {
     date: {type: Date, select: false},
-    password: {type: String, select: false}
+    password: {type: String, select: false},
+    token: {type: String, select: false}
   },
   salt: { type: String, select: false },
   administrator: { type: Boolean, default: false },
@@ -54,16 +55,18 @@ function cryptPassword(password, salt, cb) {
 
 schema.pre('save', function(next) {
   var user = this;
-  
+
   if (!user.isModified('password') && !user.isModified('passwordreset')) {
     return next();
   }
   if (user.isModified('password') &&
       user.password === user.passwordreset.password) {
-    user.passwordreset = {};
+    user.passwordreset.password = null;
+    user.passwordreset.token = null;
     return next();
   }
   process.nextTick(function() {
+    console.log('nexttick');
     var passwordToCrypt = (user.isModified('password') ?
                            user.password :
                            user.passwordreset.password);

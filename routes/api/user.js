@@ -7,6 +7,7 @@ var ForbiddenError = require('../../errors/forbiddenError');
 var Auth = require('../../tools/auth');
 var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../../models/user');
+var uuid = require('node-uuid');
 
 router.get('/', Auth.adminConnected, function(req, res, next) {
   UserModel.find(function(err, users) {
@@ -39,7 +40,9 @@ router.post('/:userId/change-password', function(req, res, next) {
 
   var oldpass = req.body.oldPass;
   var newpass = req.body.newPass;
-  if (oldpass === newpass) {return next(new ForbiddenError()); }
+  if (!oldpass || !newpass || newpass.trim() === '' || oldpass === newpass) {
+    return next(new ForbiddenError());
+  }
   UserModel.findById(id, function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
@@ -51,26 +54,24 @@ router.post('/:userId/change-password', function(req, res, next) {
   });
 });             
 
-router.post('/:userId/request-reset', function(req, res, next) {
-  var id = req.params.userId;
-  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+router.post('/reset-password', function(req, res, next) {
+  var mail = req.body.email;
+  if (!mail || mail.trim() === '') {return next(new ForbiddenError()); }
 
-  var oldpass = req.body.oldPass;
   var newpass = req.body.newPass;
-  UserModel.findById(id, '+password +salt', function(err, user) {
+  var field = '+password +salt +passwordreset.password';
+  UserModel.findOne({email: mail}, field, function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
-    user.comparePassword(oldpass, function(err, valid) {
+    if (user.passwordreset &&
+        user.passwordreset.password &&
+        user.passwordreset.password.trim() !== '') {
+      return next(new ForbiddenError());
+    }
+    user.passwordreset = {password: newpass, token: uuid.v4()};
+    user.save(function(err) {
       if (err) { return next(err); }
-      if (valid) {
-        user.passwordreset = {password: newpass};
-        user.save(function(err) {
-          if (err) { return next(err); }
-          res.end();
-        });
-      } else {
-        return next(new ForbiddenError());
-      }
+      res.end();
     });
   });
 });
@@ -78,13 +79,27 @@ router.post('/:userId/request-reset', function(req, res, next) {
 router.get('/:userId/password-reset', function(req, res, next) {
   var id = req.params.userId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+
+  console.log(req.query);
+  var uuid = req.query.uuid;
   
-  UserModel.findById(id, '+passwordreset.password', function(err, user) {
+  var field = '+passwordreset.password '+
+      '+passwordreset.date +passwordreset.token';
+  UserModel.findById(id, field, function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
+    if (!user.passwordreset ||
+        !user.passwordreset.password ||
+        user.passwordreset.password.trim() === '') {
+      return next(new ForbiddenError());
+    }
+    if (user.passwordreset.token !== uuid) {
+      return next(new ForbiddenError());
+    }
     user.password = user.passwordreset.password;
-    user.save(function(err) {
+    user.save(function(err, data) {
       if (err) { return next(err); }
+      console.log(data);
       res.end();
     });
   });  
