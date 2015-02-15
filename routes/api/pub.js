@@ -114,7 +114,7 @@ router.post('/:pubId/comments', Auth.userConnected, function(req, res, next) {
     if (err) { return next(err); }
     req.body.userId = req.redisData.id;
     pub.comments.push(req.body);
-    pub.nbComments = pub.nbComments + 1;
+    pub.nbComments = pub.comments.length;
     pub.save(function(err) {
       if (err) { return next(err); }
       res.end();
