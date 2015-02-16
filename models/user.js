@@ -44,15 +44,16 @@ function cryptPassword(password, salt, cb) {
       // generate a salt
       salt = crypto.createHash('md5').update(
         crypto.randomBytes(SALT_RANDOM_SIZE).toString('hex')).digest('hex');
-    } catch (ex) { return cb(ex); }    
+    } catch (ex) { return cb(ex); }
   }
   crypto.pbkdf2(password, salt, HASH_ITERATION, HASH_LEN, function(err, hash) {
     if (err) { return cb(err); }
     password = (new Buffer(hash, 'binary')).toString('hex');
     cb(null, {salt: salt, password: password});
-  }); 
+  });
 }
 
+// TODO separate the check of password and passwordreset in 2 pre save filter
 schema.pre('save', function(next) {
   var user = this;
 
@@ -60,17 +61,16 @@ schema.pre('save', function(next) {
     return next();
   }
   if (user.isModified('password') &&
-      user.password === user.passwordreset.password) {
+  user.password === user.passwordreset.password) {
     user.passwordreset.password = null;
     user.passwordreset.token = null;
     return next();
   }
   process.nextTick(function() {
-    var passwordToCrypt = (user.isModified('password') ?
-                           user.password :
-                           user.passwordreset.password);
+    var passwordToCrypt =
+      user.isModified('password') ? user.password : user.passwordreset.password;
     cryptPassword(passwordToCrypt, user.salt, function(err, pass) {
-      if (err) {return next(err); }
+      if (err) { return next(err); }
       user.salt = pass.salt;
       if (user.isModified('password')) {
         user.password = pass.password;
@@ -88,7 +88,7 @@ schema.pre('save', function(next) {
  */
 
 schema.statics.generateRandomPassword = function() {
-var a = PASSWD_RANDOM_POSSIBILITIES;
+  var a = PASSWD_RANDOM_POSSIBILITIES;
   var pass = '';
   for (var index = 0; index < 10; ++index) {
     pass += a[parseInt((Math.random() * 1000) % a.length)];
@@ -132,8 +132,7 @@ schema.methods.comparePassword = function(password, cb) {
   crypto.pbkdf2(password, this.salt, HASH_ITERATION, HASH_LEN,
     function(err, hash) {
       if (err) { return cb(err); }
-      cb(null, hashPassword ===
-        (new Buffer(hash, 'binary')).toString('hex'));
+      cb(null, hashPassword === (new Buffer(hash, 'binary')).toString('hex'));
     }
   );
 };
