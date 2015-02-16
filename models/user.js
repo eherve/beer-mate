@@ -17,14 +17,14 @@ var emailValidator = [
 ];
 
 var schema = new Schema({
-  name: { type: String },
-  surname: { type: String },
+  firstname: { type: String, required: true },
+  lastname: { type: String, required: true },
   email: { type: String, required: true, validate: emailValidator },
   password: { type: String, select: false, required: true },
   passwordreset: {
-    date: {type: Date, select: false},
-    password: {type: String, select: false},
-    token: {type: String, select: false}
+    date: { type: Date, select: false },
+    password: { type: String, select: false },
+    token: { type: String, select: false }
   },
   salt: { type: String, select: false },
   administrator: { type: Boolean, default: false },

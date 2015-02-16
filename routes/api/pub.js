@@ -103,7 +103,13 @@ router.get('/:pubId/comments', function(req, res, next) {
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   PubModel.findById(id, 'comments', function(err, pub) {
     if (err) { return next(err); }
-    res.send(pub.comments);
+    PubModel.populate(pub,
+      [ { path: 'comments.userId', select: 'firstname lastname' } ],
+      function(err, pub) {
+        if (err) { return next(err); }
+        res.send(pub.comments);
+      }
+    );
   });
 });
 
@@ -138,19 +144,20 @@ router.post('/:pubId/ratings', Auth.userConnected, function(req, res, next) {
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   PubModel.findById(id, 'ratings', function(err, pub) {
     if (err) { return next(err); }
-    var userId = req.redisData.id;
-    // Unicity on the user for the rating and avg
-    var avg = 0;
+    var userId = req.redisData.id; var avg = 0; var found = false;
     for (var index = 0; index < pub.ratings.length; ++index) {
       var rating = pub.ratings[index];
       if (rating && rating.userId && rating.userId.equals(userId)) {
-        return next(new Error('User has already rated the pub !'));
+        found = true; rating.note = req.body.note; rating.createdAt = null;
       }
       avg = avg + rating.note;
     }
-    req.body.userId = userId;
-    pub.ratings.push(req.body);
-    pub.rating = (avg + parseInt(req.body.note)) / pub.ratings.length;
+    if (!found) {
+      req.body.userId = userId; req.body.createdAt = null;
+      pub.ratings.push(req.body);
+      avg = avg + parseInt(req.body.note);
+    }
+    pub.rating = avg / pub.ratings.length;
     pub.save(function(err) {
       if (err) { return next(err); }
       res.end();
