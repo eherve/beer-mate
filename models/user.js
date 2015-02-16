@@ -66,7 +66,6 @@ schema.pre('save', function(next) {
     return next();
   }
   process.nextTick(function() {
-    console.log('nexttick');
     var passwordToCrypt = (user.isModified('password') ?
                            user.password :
                            user.passwordreset.password);

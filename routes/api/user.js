@@ -8,6 +8,9 @@ var Auth = require('../../tools/auth');
 var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../../models/user');
 var uuid = require('node-uuid');
+var Resource = require('../../resource');
+var Email = require('../../email');
+var logger = require('../../logger').get('userAPI');
 
 router.get('/', Auth.adminConnected, function(req, res, next) {
   UserModel.find(function(err, users) {
@@ -54,6 +57,18 @@ router.post('/:userId/change-password', function(req, res, next) {
   });
 });             
 
+function sendResetPassEmail(req, user, token) {
+  Resource.getEmailFile('resetPasswordEmail', req.locale, function(err, file) {
+    if (err) { return; }
+    Email.send(user.email, req.translate('email.reset-password'), file,
+    { host: req.get('host'), user: user, token: token}, function(err) {
+        if (err) { return; }
+        logger.debug('Validation email sent');
+      }
+    );
+  });
+}
+
 router.post('/reset-password', function(req, res, next) {
   var mail = req.body.email;
   if (!mail || mail.trim() === '') {return next(new ForbiddenError()); }
@@ -71,6 +86,8 @@ router.post('/reset-password', function(req, res, next) {
     user.passwordreset = {password: newpass, token: uuid.v4()};
     user.save(function(err) {
       if (err) { return next(err); }
+      // send mail
+      sendResetPassEmail(req, user, user.passwordreset.token);
       res.end();
     });
   });
@@ -80,7 +97,6 @@ router.get('/:userId/password-reset', function(req, res, next) {
   var id = req.params.userId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
 
-  console.log(req.query);
   var uuid = req.query.uuid;
   
   var field = '+passwordreset.password '+
@@ -97,9 +113,8 @@ router.get('/:userId/password-reset', function(req, res, next) {
       return next(new ForbiddenError());
     }
     user.password = user.passwordreset.password;
-    user.save(function(err, data) {
+    user.save(function(err) {
       if (err) { return next(err); }
-      console.log(data);
       res.end();
     });
   });  

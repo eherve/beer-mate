@@ -3,5 +3,6 @@
 	"logger.level.error": "erreur",
 	"logger.level.warn": "avertissement",
 	"logger.level.info": "information",
-	"logger.level.debug": "debug"
+	"logger.level.debug": "debug",
+	"email.reset-password": "Réinitialisation du mot de passe"
 }
