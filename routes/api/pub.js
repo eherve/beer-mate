@@ -116,10 +116,11 @@ router.get('/:pubId/comments', function(req, res, next) {
   var id = req.params.pubId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   var aggregate = PubModel.aggregate();
-  aggregate.match({ _id: new ObjectId(id) }).unwind('comments');
+  aggregate.match({ _id: new ObjectId(id) }).unwind('comments')
+  .sort({ 'comments.createdAt': 1 });
   var skip = getSkip(req); if (skip !== null) { aggregate.skip(skip); }
   var limit = getLimit(req); if (limit !== null) { aggregate.limit(limit); }
-  aggregate.group({ _id: '$comments._id',
+  aggregate.sort({ 'comments.createdAt': -1 }).group({ _id: '$comments._id',
     message: { $first: '$comments.message' },
     createdAt: { $first: '$comments.createdAt' },
     user: { $first: '$comments.userId' }
@@ -148,12 +149,21 @@ router.post('/:pubId/comments', Auth.userConnected, function(req, res, next) {
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   PubModel.findById(id, 'comments', function(err, pub) {
     if (err) { return next(err); }
-    req.body.userId = req.redisData.id;
-    pub.comments.push(req.body);
+    req.body.userId = req.redisData.id; pub.comments.push(req.body);
     pub.nbComments = pub.comments.length;
-    pub.save(function(err) {
+    pub.save(function(err, pub) {
       if (err) { return next(err); }
-      res.end();
+      var comment = pub.comments[pub.comments.length - 1].toObject();
+      comment.comments = { userId: comment.userId }; delete comment.userId;
+      PubModel.populate([ comment ],
+        [ { path: 'comments.userId', select: 'firstname lastname' } ],
+        function(err, comments) {
+          if (err) { return next(err); }
+          comment = comments[0];
+          comment.user = comment.comments.userId; delete comment.comments;
+          res.send(comment);
+        }
+      );
     });
   });
 });
