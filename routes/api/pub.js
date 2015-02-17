@@ -10,6 +10,20 @@ var PubModel = require('../../models/pub');
 
 var ALLOWED_MERGE_FIELD = 'name phone address webSite days currency';
 
+function getSkip(req) {
+  if (req.query.skip && !isNaN(parseInt(req.query.skip))) {
+    return parseInt(req.query.skip);
+  }
+  return null;
+}
+
+function getLimit(req) {
+  if (req.query.limit && !isNaN(parseInt(req.query.limit))) {
+    return parseInt(req.query.limit);
+  }
+  return null;
+}
+
 function addLocalizationFilter(filters, query) {
   if (query.longitude === undefined ||
   query.latitude === undefined) { return; }
@@ -101,13 +115,29 @@ router.put('/:pubId', Auth.userConnected, function(req, res, next) {
 router.get('/:pubId/comments', function(req, res, next) {
   var id = req.params.pubId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  PubModel.findById(id, 'comments', function(err, pub) {
+  var aggregate = PubModel.aggregate();
+  aggregate.match({ _id: new ObjectId(id) }).unwind('comments');
+  var skip = getSkip(req); if (skip !== null) { aggregate.skip(skip); }
+  var limit = getLimit(req); if (limit !== null) { aggregate.limit(limit); }
+  aggregate.group({ _id: '$comments._id',
+    message: { $first: '$comments.message' },
+    createdAt: { $first: '$comments.createdAt' },
+    user: { $first: '$comments.userId' }
+  });
+  aggregate.project({ message: 1, createdAt: 1, user: 1 });
+  aggregate.exec(function(err, comments) {
     if (err) { return next(err); }
-    PubModel.populate(pub,
+    comments = comments.map(function(doc) {
+      doc.comments = { userId: doc.user }; delete doc.user; return doc;
+    });
+    PubModel.populate(comments,
       [ { path: 'comments.userId', select: 'firstname lastname' } ],
-      function(err, pub) {
+      function(err, comments) {
         if (err) { return next(err); }
-        res.send(pub.comments);
+        comments = comments.map(function(doc) {
+          doc.user = doc.comments.userId; delete doc.comments; return doc;
+        });
+        res.send(comments);
       }
     );
   });
