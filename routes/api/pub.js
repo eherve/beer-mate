@@ -67,7 +67,7 @@ function getFields(query) {
 
 router.get('/', function(req, res, next) {
   var filters = getFilters(req.query);
-  var fields = getFields(req.query);
+  var fields = 'name address days currency';
   PubModel.find(filters, fields, function(err, pubs) {
     if (err) { return next(err); }
     res.send(pubs);
