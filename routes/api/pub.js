@@ -155,7 +155,7 @@ router.post('/:pubId/comments', Auth.userConnected, function(req, res, next) {
         function(err, comments) {
           if (err) { return next(err); }
           comment = comments[0];
-          comment.user = comment.comments.userId; delete comment.comments;
+          comment.userId = comment.comments.userId; delete comment.comments;
           res.send(comment);
         }
       );
