@@ -120,7 +120,7 @@ router.get('/:pubId/comments', function(req, res, next) {
   .sort({ 'comments.createdAt': 1 });
   var skip = getSkip(req); if (skip !== null) { aggregate.skip(skip); }
   var limit = getLimit(req); if (limit !== null) { aggregate.limit(limit); }
-  aggregate.sort({ 'comments.createdAt': -1 }).group({ _id: '$_id',
+  aggregate.group({ _id: '$_id',
     nbComments: { $first: '$nbComments' },
     comments: { $push: '$comments' }
   });
