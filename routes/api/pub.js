@@ -117,10 +117,10 @@ router.get('/:pubId/comments', function(req, res, next) {
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   var aggregate = PubModel.aggregate();
   aggregate.match({ _id: new ObjectId(id) }).unwind('comments')
-  .sort({ 'comments.createdAt': 1 });
+  .sort({ 'comments.createdAt': -1 });
   var skip = getSkip(req); if (skip !== null) { aggregate.skip(skip); }
   var limit = getLimit(req); if (limit !== null) { aggregate.limit(limit); }
-  aggregate.sort({ 'comments.createdAt': -1 }).group({ _id: '$_id',
+  aggregate.group({ _id: '$_id',
     nbComments: { $first: '$nbComments' },
     comments: { $push: '$comments' }
   });
