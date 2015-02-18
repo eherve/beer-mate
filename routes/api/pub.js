@@ -120,25 +120,20 @@ router.get('/:pubId/comments', function(req, res, next) {
   .sort({ 'comments.createdAt': 1 });
   var skip = getSkip(req); if (skip !== null) { aggregate.skip(skip); }
   var limit = getLimit(req); if (limit !== null) { aggregate.limit(limit); }
-  aggregate.sort({ 'comments.createdAt': -1 }).group({ _id: '$comments._id',
-    message: { $first: '$comments.message' },
-    createdAt: { $first: '$comments.createdAt' },
-    user: { $first: '$comments.userId' }
+  aggregate.sort({ 'comments.createdAt': -1 }).group({ _id: '$_id',
+    nbComments: { $first: '$nbComments' },
+    comments: { $push: '$comments' }
   });
-  aggregate.project({ message: 1, createdAt: 1, user: 1 });
-  aggregate.exec(function(err, comments) {
+  aggregate.project({ nbComments: 1, comments: 1 });
+  aggregate.exec(function(err, data) {
     if (err) { return next(err); }
-    comments = comments.map(function(doc) {
-      doc.comments = { userId: doc.user }; delete doc.user; return doc;
-    });
-    PubModel.populate(comments,
+    if (!data || data.length === 0) { return next(new NotFoundError()); }
+    PubModel.populate(data,
       [ { path: 'comments.userId', select: 'firstname lastname' } ],
-      function(err, comments) {
+      function(err, data) {
         if (err) { return next(err); }
-        comments = comments.map(function(doc) {
-          doc.user = doc.comments.userId; delete doc.comments; return doc;
-        });
-        res.send(comments);
+        data = data[0]; data.skip = skip; data.limit = limit;
+        res.send(data);
       }
     );
   });
