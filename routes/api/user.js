@@ -20,6 +20,7 @@ router.get('/', Auth.adminConnected, function(req, res, next) {
 });
 
 router.post('/', Auth.adminConnected, function(req, res, next) {
+  // TODO filter fields
   var user = new UserModel(req.body);
   user.save(function(err) {
     if (err) { return next(err); }

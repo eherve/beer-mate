@@ -76,6 +76,7 @@ router.get('/', function(req, res, next) {
 
 router.post('/', Auth.userConnected, function(req, res, next) {
   req.body.ratings = []; req.body.comments = []; req.body.checkIn = [];
+  req.body.nbComments = 0; req.body.rating = null;
   var pub = new PubModel(req.body);
   pub.userId = req.redisData.id;
   pub.save(function(err) {
