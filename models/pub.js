@@ -8,12 +8,6 @@ var nameValidator = [
     validator: 'isLength',
     arguments: [2, 50],
     message: 'validator.name.size'
-  }),
-  validate({
-    validator: 'matches',
-    arguments: [ /^[a-zA-Z0-9_-]+$/ ],
-    passIfEmpty: true,
-    message: 'validator.name.format'
   })
 ];
 

@@ -115,27 +115,31 @@ router.put('/:pubId', Auth.userConnected, function(req, res, next) {
 router.get('/:pubId/comments', function(req, res, next) {
   var id = req.params.pubId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  var aggregate = PubModel.aggregate();
-  aggregate.match({ _id: new ObjectId(id) }).unwind('comments')
-  .sort({ 'comments.createdAt': -1 });
-  var skip = getSkip(req); if (skip !== null) { aggregate.skip(skip); }
-  var limit = getLimit(req); if (limit !== null) { aggregate.limit(limit); }
-  aggregate.group({ _id: '$_id',
-    nbComments: { $first: '$nbComments' },
-    comments: { $push: '$comments' }
-  });
-  aggregate.project({ nbComments: 1, comments: 1 });
-  aggregate.exec(function(err, data) {
+  PubModel.findById(id, '_id', function(err, pub) {
     if (err) { return next(err); }
-    if (!data || data.length === 0) { return next(new NotFoundError()); }
-    PubModel.populate(data,
-      [ { path: 'comments.userId', select: 'firstname lastname' } ],
-      function(err, data) {
-        if (err) { return next(err); }
-        data = data[0]; data.skip = skip; data.limit = limit;
-        res.send(data);
-      }
-    );
+    if (!pub) { return next(new NotFoundError()); }
+    var aggregate = PubModel.aggregate();
+    aggregate.match({ _id: new ObjectId(id) })
+    .unwind('comments').sort({ 'comments.createdAt': -1 });
+    var skip = getSkip(req); if (skip !== null) { aggregate.skip(skip); }
+    var limit = getLimit(req); if (limit !== null) { aggregate.limit(limit); }
+    aggregate.group({ _id: '$_id',
+      nbComments: { $first: '$nbComments' },
+      comments: { $push: '$comments' }
+    });
+    aggregate.project({ nbComments: 1, comments: 1 });
+    aggregate.exec(function(err, data) {
+      if (err) { return next(err); }
+      PubModel.populate(data,
+        [ { path: 'comments.userId', select: 'firstname lastname' } ],
+        function(err, data) {
+          if (err) { return next(err); }
+          data = data[0] || { _id: id, nbComments: 0, comments: [] };
+          data.skip = skip; data.limit = limit;
+          res.send(data);
+        }
+      );
+    });
   });
 });
 
