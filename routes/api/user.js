@@ -4,6 +4,7 @@ var express = require('express');
 var router = express.Router();
 var NotFoundError = require('../../errors/notFoundError');
 var ForbiddenError = require('../../errors/forbiddenError');
+var BadRequestError = require('../../errors/badRequestError');
 var Auth = require('../../tools/auth');
 var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../../models/user');
@@ -21,6 +22,7 @@ router.get('/', Auth.adminConnected, function(req, res, next) {
 
 router.post('/', Auth.adminConnected, function(req, res, next) {
   // TODO filter fields
+  req.body.favorites = [];
   var user = new UserModel(req.body);
   user.save(function(err) {
     if (err) { return next(err); }
@@ -38,9 +40,33 @@ router.get('/:userId', Auth.adminConnected, function(req, res, next) {
   });
 });
 
+/* Favorites */
+
+router.post('/:userId/favorites', Auth.userConnected, function(req, res, next) {
+  var id = req.params.userId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  if (req.redisData.id !== id) { return next(new ForbiddenError()); }
+  UserModel.findById(id, function(err, user) {
+    if (err) { return next(err); }
+    if (!user) { return next(new NotFoundError()); }
+    if (!req.body.pubId || !ObjectId.isValid(req.body.pubId)) {
+      return next(new BadRequestError());
+    }
+    var pubId = new ObjectId(req.body.pubId);
+    for (var index = 0; index < user.favorites; ++index) {
+      if (pubId.equals(user.favorites[index].pubId)) { return res.end(); }
+    }
+    user.favorites.push({ pubId: pubId });
+    user.save(function(err) { if (err) { return next(err); } res.end(); });
+  });
+});
+
+/* Change password */
+
 router.post('/:userId/change-password', function(req, res, next) {
   var id = req.params.userId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  if (req.redisData.id !== id) { return next(new ForbiddenError()); }
   var oldpass = req.body.oldPass;
   var newpass = req.body.newPass;
   if (!oldpass || !newpass || newpass.trim() === '' || oldpass === newpass) {
@@ -58,6 +84,8 @@ router.post('/:userId/change-password', function(req, res, next) {
     });
   });
 });
+
+/* Reset password */
 
 function sendResetPassEmail(req, user, token) {
   Resource.getEmailFile('resetPasswordEmail', req.locale, function(err, file) {
