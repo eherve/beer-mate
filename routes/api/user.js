@@ -58,6 +58,17 @@ router.put('/:userId', Auth.userConnected, function(req, res, next) {
 
 /* Favorites */
 
+router.get('/:userId/favorites', Auth.userConnected, function(req, res, next) {
+  var id = req.params.userId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  if (req.redisData.id !== id) { return next(new ForbiddenError()); }
+  UserModel.findById(id, 'favorites', function(err, user) {
+    if (err) { return next(err); }
+    if (!user) { return next(new NotFoundError()); }
+    res.send(user.favorites || []);
+  });
+});
+
 router.post('/:userId/favorites', Auth.userConnected, function(req, res, next) {
   var id = req.params.userId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
