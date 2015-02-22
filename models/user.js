@@ -16,16 +16,11 @@ var emailValidator = [
   })
 ];
 
-var favoriteSchema = new Schema({
-  date: { type: Date, default: Date.now, required: true },
-  pubId: { type: Schema.Types.ObjectId, ref: 'Pub', required: true }
-});
-
 var schema = new Schema({
   firstname: { type: String, required: true },
   lastname: { type: String, required: true },
   email: { type: String, required: true, validate: emailValidator },
-  favorites: [ favoriteSchema ],
+  favorites: [ { type: Schema.Types.ObjectId, ref: 'Pub' } ],
   password: { type: String, select: false, required: true },
   passwordreset: {
     date: { type: Date, select: false },
