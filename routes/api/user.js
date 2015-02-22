@@ -4,6 +4,7 @@ var express = require('express');
 var router = express.Router();
 var NotFoundError = require('../../errors/notFoundError');
 var ForbiddenError = require('../../errors/forbiddenError');
+var BadRequestError = require('../../errors/badRequestError');
 var Auth = require('../../tools/auth');
 var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../../models/user');
@@ -56,30 +57,6 @@ router.put('/:userId', Auth.userConnected, function(req, res, next) {
   });
 });
 
-/* Change password */
-
-router.post('/:userId/change-password', function(req, res, next) {
-  var id = req.params.userId;
-  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  if (req.redisData.id !== id) { return next(new ForbiddenError()); }
-  var oldpass = req.body.oldPass;
-  var newpass = req.body.newPass;
-  if (!oldpass || !newpass || newpass.trim() === '' || oldpass === newpass) {
-    // INFO should be a 400 ?
-    return next(new ForbiddenError());
-  }
-  UserModel.findById(id, function(err, user) {
-    if (err) { return next(err); }
-    if (!user) { return next(new NotFoundError()); }
-    UserModel.modifyPassword(id, oldpass, newpass, function(err, user) {
-      if (err) { return next(err); }
-      // INFO if it happends why ? maybe notfound error ?
-      if (!user) { return next(new ForbiddenError()); }
-      res.end();
-    });
-  });
-});
-
 /* Reset password */
 
 function sendResetPassEmail(req, user, token) {
@@ -97,19 +74,17 @@ function sendResetPassEmail(req, user, token) {
 
 router.post('/reset-password', function(req, res, next) {
   var email = req.body.email;
-  // INFO should be a 400 ?
-  if (!email || email.trim() === '') { return next(new ForbiddenError()); }
-  var newpass = req.body.newPass;
-  var field = '+password +salt +passwordreset.password';
+  if (!email || email.trim() === '') { return next(new BadRequestError()); }
+  var field = '+password +salt';
   UserModel.findOne({ email: email }, field, function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
-    if (user.passwordreset && user.passwordreset.password &&
-      user.passwordreset.password.trim() !== '') {
-        // INFO should be a 400 ?
+    var dateLim = new Date();
+    dateLim.setDate(dateLim.getDate() - 1);
+    if (user.passwordreset.date && user.passwordreset.date > dateLim) {
         return next(new ForbiddenError());
       }
-    user.passwordreset = { password: newpass, token: uuid.v4() };
+    user.passwordreset = { token: uuid.v4(), date: new Date() };
     user.save(function(err) {
       if (err) { return next(err); }
       sendResetPassEmail(req, user, user.passwordreset.token);
@@ -118,24 +93,38 @@ router.post('/reset-password', function(req, res, next) {
   });
 });
 
-router.get('/:userId/password-reset', function(req, res, next) {
+var passwordreset = function(req, res, next) {
   var id = req.params.userId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   var uuid = req.query.uuid;
-  var field = '+passwordreset.password '+
-      '+passwordreset.date +passwordreset.token';
-  UserModel.findById(id, field, function(err, user) {
+  UserModel.findById(id, function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
-    if (!user.passwordreset || !user.passwordreset.password ||
-      user.passwordreset.password.trim() === '') {
-        return next(new ForbiddenError());
-      }
-    if (user.passwordreset.token !== uuid) {
-      // INFO should be a 400 ?
+
+    var dateLim = user.passwordreset.date;
+    dateLim.setDate(dateLim.getDate() + 1);
+    if (!user.passwordreset || !user.passwordreset.date ||
+        dateLim < new Date() || user.passwordreset.token !== uuid) {
       return next(new ForbiddenError());
     }
-    user.password = user.passwordreset.password;
+    next(null, user);
+  });
+};
+
+router.get('/:userId/password-reset', function(req, res, next) {
+  passwordreset(req, res, function(err) {
+    if (err) { return next(err); }
+    res.end();
+  });
+});
+
+router.post('/:userId/password-reset', function(req, res, next) {
+  var newPass = req.body.password;
+  if (!newPass || newPass.trim() === '') { return new BadRequestError(); }
+  passwordreset(req, res, function(err, user) {
+    if (err) { return next(err); }
+    user.password = newPass;
+    user.passwordreset.token = '';
     user.save(function(err) {
       if (err) { return next(err); }
       res.end();

@@ -23,9 +23,8 @@ var schema = new Schema({
   favorites: [ { type: Schema.Types.ObjectId, ref: 'Pub' } ],
   password: { type: String, select: false, required: true },
   passwordreset: {
-    date: { type: Date, select: false },
-    password: { type: String, select: false },
-    token: { type: String, select: false }
+    date: { type: Date},
+    token: { type: String}
   },
   salt: { type: String, select: false },
   administrator: { type: Boolean, default: false },
@@ -58,27 +57,25 @@ function cryptPassword(password, salt, cb) {
 schema.pre('save', function(next) {
   var user = this;
 
-  if (!user.isModified('password') && !user.isModified('passwordreset')) {
-    return next();
-  }
-  if (user.isModified('password') &&
-  user.password === user.passwordreset.password) {
-    user.passwordreset.password = null;
-    user.passwordreset.token = null;
-    return next();
-  }
+  if (!user.isModified('password')) { return next(); }
+  // if (user.isModified('password') &&
+  // user.password === user.passwordreset.password) {
+  //   user.passwordreset.password = null;
+  //   user.passwordreset.token = null;
+  //   return next();
+  // }
   process.nextTick(function() {
     var passwordToCrypt =
       user.isModified('password') ? user.password : user.passwordreset.password;
     cryptPassword(passwordToCrypt, user.salt, function(err, pass) {
       if (err) { return next(err); }
       user.salt = pass.salt;
-      if (user.isModified('password')) {
-        user.password = pass.password;
-      } else {
-        user.passwordreset.password = pass.password;
-        user.passwordreset.date = new Date();
-      }
+      // if (user.isModified('password')) {
+      user.password = pass.password;
+      // } else {
+      //   user.passwordreset.password = pass.password;
+      //   user.passwordreset.date = new Date();
+      // }
       next();
     });
   });
