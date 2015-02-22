@@ -51,4 +51,4 @@ module.exports.fetch = function(Model, options) {
   }
   aggregate.project(project);
   return aggregate;
-}
+};
