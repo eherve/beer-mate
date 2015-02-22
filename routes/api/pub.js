@@ -5,24 +5,11 @@ var express = require('express');
 var router = express.Router();
 var NotFoundError = require('../../errors/notFoundError');
 var Auth = require('../../tools/auth');
+var Filter = require('../../tools/filter');
 var ObjectId = require('mongoose').Types.ObjectId;
 var PubModel = require('../../models/pub');
 
 var ALLOWED_UPDATE_FIELD = 'name phone address webSite days currency';
-
-function getSkip(req) {
-  if (req.query.skip && !isNaN(parseInt(req.query.skip))) {
-    return parseInt(req.query.skip);
-  }
-  return null;
-}
-
-function getLimit(req) {
-  if (req.query.limit && !isNaN(parseInt(req.query.limit))) {
-    return parseInt(req.query.limit);
-  }
-  return null;
-}
 
 function addLocalizationFilter(filters, query) {
   if (query.longitude === undefined ||
@@ -122,8 +109,10 @@ router.get('/:pubId/comments', function(req, res, next) {
     var aggregate = PubModel.aggregate();
     aggregate.match({ _id: new ObjectId(id) })
     .unwind('comments').sort({ 'comments.createdAt': -1 });
-    var skip = getSkip(req); if (skip !== null) { aggregate.skip(skip); }
-    var limit = getLimit(req); if (limit !== null) { aggregate.limit(limit); }
+    var skip = Filter.getSkip(req);
+    if (skip !== null) { aggregate.skip(skip); }
+    var limit = Filter.getLimit(req);
+    if (limit !== null) { aggregate.limit(limit); }
     aggregate.group({ _id: '$_id',
       nbComments: { $first: '$nbComments' },
       comments: { $push: '$comments' }

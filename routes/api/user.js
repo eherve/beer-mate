@@ -58,14 +58,15 @@ router.put('/:userId', Auth.userConnected, function(req, res, next) {
 
 /* Favorites */
 
+// TODO add filter on one pub to check
 router.get('/:userId/favorites', Auth.userConnected, function(req, res, next) {
   var id = req.params.userId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
   if (req.redisData.id !== id) { return next(new ForbiddenError()); }
-  UserModel.findById(id, 'favorites', function(err, user) {
+  UserModel.findOne({ _id: new ObjectId(id) }, function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
-    res.send(user.favorites || []);
+    res.send(user.favorites);
   });
 });
 
