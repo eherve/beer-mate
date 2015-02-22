@@ -3,6 +3,7 @@
 var express = require('express');
 var router = express.Router();
 var NotFoundError = require('../../errors/notFoundError');
+var BadRequestError = require('../../errors/badRequestError');
 var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../../models/user');
 
@@ -43,6 +44,9 @@ router.get('/favorites', function(req, res, next) {
 
 router.post('/favorites', function(req, res, next) {
   var id = req.redisData.id;
+  if (!req.body.pubId || !ObjectId.isValid(req.body.pubId)) {
+    return next(new BadRequestError());
+  }
   UserModel.update({ _id: id },
     { $addToSet: { favorites: { _id: new ObjectId(req.body.pubId) } } },
     function(err) {
