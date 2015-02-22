@@ -56,48 +56,6 @@ router.put('/:userId', Auth.userConnected, function(req, res, next) {
   });
 });
 
-/* Favorites */
-
-// TODO add filter on one pub to check
-router.get('/:userId/favorites', Auth.userConnected, function(req, res, next) {
-  var id = req.params.userId;
-  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  if (req.redisData.id !== id) { return next(new ForbiddenError()); }
-  UserModel.findOne({ _id: new ObjectId(id) }, function(err, user) {
-    if (err) { return next(err); }
-    if (!user) { return next(new NotFoundError()); }
-    res.send(user.favorites);
-  });
-});
-
-router.post('/:userId/favorites', Auth.userConnected, function(req, res, next) {
-  var id = req.params.userId;
-  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  if (req.redisData.id !== id) { return next(new ForbiddenError()); }
-  UserModel.update({ _id: id },
-    { $addToSet: { favorites: { _id: new ObjectId(req.body.pubId) } } },
-    function(err) {
-      if (err) { return next(err); }
-      res.end();
-    }
-  );
-});
-
-router.delete('/:userId/favorites', Auth.userConnected,
-  function(req, res, next) {
-    var id = req.params.userId;
-    if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-    if (req.redisData.id !== id) { return next(new ForbiddenError()); }
-    UserModel.update({ _id: id },
-      { $pull: { favorites: new ObjectId(req.body.pubId) } },
-      function(err) {
-        if (err) { return next(err); }
-        res.end();
-      }
-    );
-  }
-);
-
 /* Change password */
 
 router.post('/:userId/change-password', function(req, res, next) {

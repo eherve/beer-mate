@@ -1,0 +1,66 @@
+'use strict';
+
+var express = require('express');
+var router = express.Router();
+var NotFoundError = require('../../errors/notFoundError');
+var ObjectId = require('mongoose').Types.ObjectId;
+var UserModel = require('../../models/user');
+
+var ALLOWED_UPDATE_FIELD = 'firstname lastname';
+
+router.get('/', function(req, res, next) {
+  var id = req.redisData.id;
+  UserModel.findById(id, function(err, user) {
+    if (err) { return next(err); }
+    if (!user) { return next(new NotFoundError()); }
+    res.send(user);
+  });
+});
+
+router.post('/', function(req, res, next) {
+  var id = req.redisData.id;
+  UserModel.findById(id, function(err, user) {
+    if (err) { return next(err); }
+    if (!user) { return next(new NotFoundError()); }
+    user.merge(req.body, { fields: ALLOWED_UPDATE_FIELD });
+    user.save(function(err) {
+      if (err) { return next(err); }
+      res.end();
+    });
+  });
+});
+
+/* Favorites */
+
+router.get('/favorites', function(req, res, next) {
+  var id = req.redisData.id;
+  UserModel.findOne({ _id: new ObjectId(id) }, function(err, user) {
+    if (err) { return next(err); }
+    if (!user) { return next(new NotFoundError()); }
+    res.send(user.favorites);
+  });
+});
+
+router.post('/favorites', function(req, res, next) {
+  var id = req.redisData.id;
+  UserModel.update({ _id: id },
+    { $addToSet: { favorites: { _id: new ObjectId(req.body.pubId) } } },
+    function(err) {
+      if (err) { return next(err); }
+      res.end();
+    }
+  );
+});
+
+router.delete('/favorites', function(req, res, next) {
+  var id = req.redisData.id;
+  UserModel.update({ _id: id },
+    { $pull: { favorites: new ObjectId(req.body.pubId) } },
+    function(err) {
+      if (err) { return next(err); }
+      res.end();
+    }
+  );
+});
+
+module.exports = router;
