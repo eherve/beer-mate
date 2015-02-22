@@ -24,8 +24,8 @@ module.exports.getToken = function(req) {
     req.query[TOKEN_NAME];
 };
 
-module.exports.sendToken = function(res, token) {
-  var data = {};
+module.exports.sendToken = function(req, res, token) {
+  var data = { userId: req.user._id };
   data[TOKEN_NAME] = token;
   res.cookie(TOKEN_NAME, token).set(TOKEN_NAME, token).send(data);
 };
@@ -34,7 +34,7 @@ module.exports.login = function(req, res, next) {
   var token = uuid.v4();
   redis.register(token, req.user._id, function(err) {
     if (err) { return next(err); }
-    module.exports.sendToken(res, token);
+    module.exports.sendToken(req, res, token);
   });
 };
 

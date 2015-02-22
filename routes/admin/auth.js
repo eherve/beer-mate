@@ -14,7 +14,7 @@ var Auth = require('../../tools/auth');
 
 router.post('/login', function(req, res, next) {
   Auth.adminConnected(req, res, function(err) {
-    if (!err) { return Auth.sendToken(res, req.redisData.token); }
+    if (!err) { return Auth.sendToken(req, res, req.redisData.token); }
     if (!req.body.email || !req.body.password) {
       return next(new BadRequestError());
     }

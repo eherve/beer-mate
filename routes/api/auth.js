@@ -20,7 +20,7 @@ var CONFIRM_EXPIRATION_DELAY = 24 * 60 * 60 * 1000;
 
 router.post('/login', function(req, res, next) {
   Auth.userConnected(req, res, function(err) {
-    if (!err) { return Auth.sendToken(res, req.redisData.token); }
+    if (!err) { return Auth.sendToken(req, res, req.redisData.token); }
     if (!req.body.email || !req.body.password) {
       return next(new BadRequestError());
     }
