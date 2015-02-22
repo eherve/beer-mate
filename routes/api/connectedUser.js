@@ -4,6 +4,7 @@ var express = require('express');
 var router = express.Router();
 var NotFoundError = require('../../errors/notFoundError');
 var BadRequestError = require('../../errors/badRequestError');
+var ForbiddenError = require('../../errors/forbiddenError');
 var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../../models/user');
 
@@ -66,5 +67,26 @@ router.delete('/favorites', function(req, res, next) {
     }
   );
 });
+
+/* Change password */
+router.post('/change-password', function(req, res, next) {
+  var id = req.redisData.id;
+  var oldpass = req.body.oldPass;
+  var newpass = req.body.newPass;
+  if (!oldpass || !newpass || newpass.trim() === '' || oldpass === newpass) {
+    return next(new BadRequestError());
+  }
+  UserModel.findById(id, function(err, user) {
+    if (err) { return next(err); }
+    if (!user) { return next(new NotFoundError()); }
+    UserModel.modifyPassword(id, oldpass, newpass, function(err, user) {
+      if (err) { return next(err); }
+      // INFO if it happends why ? maybe notfound error ?
+      if (!user) { return next(new ForbiddenError()); }
+      res.end();
+    });
+  });
+});
+
 
 module.exports = router;
