@@ -9,7 +9,7 @@ var Filter = require('../../tools/filter');
 var ObjectId = require('mongoose').Types.ObjectId;
 var PubModel = require('../../models/pub');
 
-var ALLOWED_UPDATE_FIELD = 'name phone address webSite days currency';
+var ALLOWED_UPDATE_FIELD = 'name phone address webSite days currency happyHour';
 
 function addLocalizationFilter(filters, query) {
   if (query.longitude === undefined ||
