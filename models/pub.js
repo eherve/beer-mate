@@ -78,11 +78,12 @@ var schema = new Schema({
   name: { type: String, required: true, validate: nameValidator },
   phone: { type: String },
   address: {
-    country: { type: String },
-    postalCode: { type: String },
-    city: { type: String },
-    street: { type: String },
-    loc: { type: [ Number ], index: '2dsphere', required: true }
+    country: { type: String, mergeable: false },
+    postalCode: { type: String, mergeable: false },
+    city: { type: String, mergeable: false },
+    street: { type: String, mergeable: false },
+    loc: { type: [ Number ], index: '2dsphere', required: true,
+      mergeable: false }
   },
   webSite: { type: String, validate: webSiteValidator },
   days: {
@@ -97,15 +98,20 @@ var schema = new Schema({
   },
   currency: { type: String },
   ratings: [ ratingSchema ],
-  rating: { type: Number, validate: ratingValidator, min: 0, max: 5 },
+  rating: { type: Number, validate: ratingValidator, min: 0, max: 5,
+    mergeable: false },
   comments: [ commentSchema ],
-  nbComments: { type: Number, min: 0, default: 0 },
+  nbComments: { type: Number, min: 0, default: 0, mergeable: false },
   checkIn: [ checkInSchema ],
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  enabled: { type: Boolean, default: true, required: true },
-  validated: { type: Boolean, default: false, required: true },
-  createdAt: { type: Date, default: Date.now, required: true },
-  updatedAt: { type: Date, default: Date.now, required: true }
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true,
+    mergeable: false },
+  enabled: { type: Boolean, default: true, required: true, mergeable: false },
+  validated: { type: Boolean, default: false, required: true,
+  mergeable: false },
+  createdAt: { type: Date, default: Date.now, required: true,
+  mergeable: false },
+  updatedAt: { type: Date, default: Date.now, required: true,
+  mergeable: false }
 });
 
 /*
