@@ -11,9 +11,7 @@ var PubModel = require('../../models/pub');
 
 var ALLOWED_UPDATE_FIELD = '-ratings -comments -checkIn';
 
-function addLocalizationFilter(filters, query) {
-  if (query.longitude === undefined ||
-  query.latitude === undefined) { return; }
+function addNearFilter(filters, query) {
   filters['address.loc'] = {
     $nearSphere: {
       $geometry: {
@@ -30,6 +28,29 @@ function addLocalizationFilter(filters, query) {
   if (query.minDistance !== undefined) {
     filters['address.loc'].$nearSphere.$minDistance =
       parseFloat(query.minDistance);
+  }
+}
+
+function addBoxFilter(filters, query) {
+  filters['address.loc'] = {
+    $geoWithin: {
+      $box: [
+        [ query.bottomLeftLongitude, query.bottomLeftLatitude ],
+        [ query.upperRightLongitude, query.upperRightLatitude ]
+      ]
+    }
+  };
+}
+
+function addLocalizationFilter(filters, query) {
+  if (query.longitude !== undefined && query.latitude !== undefined) {
+    return addNearFilter(filters, query);
+  }
+  if (query.bottomLeftLongitude !== undefined &&
+      query.bottomLeftLatitude !== undefined &&
+      query.upperRightLongitude !== undefined &&
+      query.upperRightLatitude !== undefined) {
+    return addBoxFilter(filters, query);
   }
 }
 
