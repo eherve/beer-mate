@@ -19,15 +19,13 @@ function getRedisData(token, cb) {
 }
 
 module.exports.getToken = function(req) {
-  return req.get(TOKEN_NAME) ||
-    req.cookies[TOKEN_NAME] ||
-    req.query[TOKEN_NAME];
+  return req.query[TOKEN_NAME];
 };
 
 module.exports.sendToken = function(req, res, token) {
-  var data = { userId: req.user._id };
+  var data = { userId: req.user._id, administrator: req.user.administrator };
   data[TOKEN_NAME] = token;
-  res.cookie(TOKEN_NAME, token).set(TOKEN_NAME, token).send(data);
+  res.send(data);
 };
 
 module.exports.login = function(req, res, next) {

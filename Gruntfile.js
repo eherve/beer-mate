@@ -83,7 +83,6 @@ module.exports = function(grunt) {
         script: 'bin/www', port: '<%=port%>',
         output: '.*Express server listening on port [0-9]+.*', debug: false
       },
-
       dev: {
         options: { debug: true, 'node_env': 'development' }
       },
