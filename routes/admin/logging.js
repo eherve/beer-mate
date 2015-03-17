@@ -7,22 +7,19 @@ var uuid = require('node-uuid');
 var SocketIo = require('../../socket.io');
 var LoggerStream = require('../../logger').stream;
 
-router.get('/', Auth.adminConnected, function(req, res) {
-  var id = uuid.v4();
-  function connection(socket) {
-    SocketIo.removeConnection(id, connection);
-    function send(data) {
-      socket.emit('data', { time: Date.now(), logger: data.transport.label,
-        level: data.level, msg: data.msg, meta: data.meta });
-    }
-    LoggerStream.history().forEach(send);
-    LoggerStream.on('logging', send);
-    socket.on('disconnect', function () {
-      LoggerStream.removeListener('logging', send);
-    });
+SocketIo.adminConnection('/admin/logging', function(socket) {
+  function send(data) {
+    socket.emit('data', { time: Date.now(), logger: data.transport.label,
+      level: data.level, msg: data.msg, meta: data.meta });
   }
-  SocketIo.connection(id, connection);
-  res.render('admin/logging', { id: id });
+  LoggerStream.history().forEach(send);
+  LoggerStream.on('logging', send);
+  socket.on('disconnect', function () {
+    LoggerStream.removeListener('logging', send);
+  });
 });
 
+router.get('/', Auth.adminConnected, function(req, res) {
+  res.render('admin/logging');
+});
 module.exports = router;

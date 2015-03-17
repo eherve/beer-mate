@@ -4,7 +4,7 @@
 $(document).ready(function() {
 
     var div = $('#logging');
-    var socket = io.connect(window.location.host + '/' + ioSocketId);
+    var socket = io.connect(window.location.host + '/admin/logging');
     socket.on('data', function(data) {
       var row = $('<div></div>').addClass('row');
       div.prepend(row);
