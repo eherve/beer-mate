@@ -42,7 +42,7 @@ router.get('/locale', function(req, res, next) {
   });
 });
 
-router.post('/favorites', function(req, res, next) {
+router.post('/locale', function(req, res, next) {
   var id = req.redisData.id;
   if (!req.body.pubId || !ObjectId.isValid(req.body.pubId)) {
     return next(new BadRequestError());
