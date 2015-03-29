@@ -23,7 +23,8 @@ module.exports.getToken = function(req) {
 };
 
 module.exports.sendToken = function(req, res, token) {
-  var data = { userId: req.user._id, administrator: req.user.administrator };
+  var data = { userId: req.user._id, administrator: req.user.administrator,
+    locale: req.user.locale };
   data[TOKEN_NAME] = token;
   res.send(data);
 };

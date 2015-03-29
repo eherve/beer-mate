@@ -114,7 +114,7 @@ schema.statics.modifyPassword = function(id, oldPassword, newPassword, cb) {
 };
 
 schema.statics.authenticate = function(email, password, cb) {
-  this.findOne({ email: email }, '+password +salt administrator')
+  this.findOne({ email: email }, '+password +salt administrator locale')
   .exec(function(err, user) {
     if (err) { return cb(err); }
     if (!user) { return cb(); }

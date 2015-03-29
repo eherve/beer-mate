@@ -38,15 +38,13 @@ router.get('/locale', function(req, res, next) {
   function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
-    res.send(user.locale);
+    res.send({ locale: user.locale });
   });
 });
 
 router.post('/locale', function(req, res, next) {
   var id = req.redisData.id;
-  if (!req.body.pubId || !ObjectId.isValid(req.body.pubId)) {
-    return next(new BadRequestError());
-  }
+  if (!req.body.locale) { return next(new BadRequestError()); }
   UserModel.update({ _id: id },
     { $set: { locale: req.body.locale } },
     function(err) {
