@@ -8,7 +8,6 @@ var logger = require('./logger').get('I18n');
 
 var defaultLocale = 'en';
 var directory = path.join(__dirname, 'locales');
-var fetchLocale;
 
 var update = false;
 var indent = '\t';
@@ -18,7 +17,7 @@ var translateAlias = '__';
 
 var locales = {};
 
-function getRequestLocales(req) {
+module.exports.getRequestLocales = function(req) {
   var languageHeader = req.headers['accept-language'];
   var locales = [];
   if (languageHeader) {
@@ -31,16 +30,24 @@ function getRequestLocales(req) {
     });
   }
   return locales;
-}
+};
 
-function _fetchLocale(req) {
-  var reqLocales = getRequestLocales(req);
-  for (var index = 0; index < reqLocales.length; ++index) {
-    var l = reqLocales[index];
-    if (locales[reqLocales[index]]) { return l; }
+module.exports.getRequestLocale = function(req) {
+  var languageHeader = req.headers['accept-language'];
+  if (languageHeader) {
+    languageHeader.split(',').forEach(function (l) {
+      var header = l.split(';', 1)[0], lr = header.split('-', 2);
+      if (lr[0]) {
+        var locale = util.format('%s%s', lr[0].toLowerCase().trim(),
+            lr[1] ? util.format('-%s', lr[1].toLowerCase().trim()) : '');
+        if (locales[locale]) { return locale; }
+      }
+    });
   }
   return defaultLocale;
-}
+};
+
+var getRequestLocale = module.exports.getRequestLocale;
 
 function getLocaleFilePath(l) {
   var filepath = path.join(directory, util.format('%s.json', l));
@@ -83,9 +90,9 @@ module.exports.configure = function(options) {
     return logger.error(
         util.format('Directory %s does not exists !', directory));
   }
-  if ('function' === typeof options.fetchLocale) {
-    fetchLocale = options.fetchLocale;
-  } else { fetchLocale = _fetchLocale; }
+  if ('function' === typeof options.getRequestLocale) {
+    getRequestLocale = options.getRequestLocale;
+  }
   options.locales.forEach(function(l) { loadLocale(l); });
   if (options.update === true) { update = true; }
   if ('string' === typeof options.indent) { indent = options.indent; }
@@ -104,8 +111,13 @@ module.exports.getLocale = function() {
   return defaultLocale;
 };
 
+module.exports.setLocale = function(locale) {
+  if ('string' === typeof this.locale) { this.locale = locale; }
+  defaultLocale = locale;
+};
+
 module.exports.init = function(req, res, next) {
-  var locale = fetchLocale(req);
+  var locale = getRequestLocale(req);
   req.locale = res.locale = locale;
   req.getLocale = res.getLocale = module.exports.getLocale;
   req.setLocale = res.setLocale = module.exports.setLocale;
@@ -114,11 +126,6 @@ module.exports.init = function(req, res, next) {
   res.locals[localSymbole] = module.exports.translate.bind(res);
   req[translateAlias] = res[translateAlias] = module.exports.translate;
   next();
-};
-
-module.exports.setLocale = function(locale) {
-  if ('string' === typeof this.locale) { this.locale = locale; }
-  defaultLocale = locale;
 };
 
 function render(strValue, options) {
