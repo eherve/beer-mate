@@ -33,15 +33,7 @@ var noteValidator = [
   validate({
     validator: 'isInt',
     passIfEmpty: true,
-    message: 'validator.note'
-  })
-];
-
-var ratingValidator = [
-  validate({
-    validator: 'isInt',
-    passIfEmpty: true,
-    message: 'validator.rating'
+    message: 'validator.note.type'
   })
 ];
 
@@ -98,8 +90,7 @@ var schema = new Schema({
   },
   currency: { type: String },
   ratings: [ ratingSchema ],
-  rating: { type: Number, validate: ratingValidator, min: 0, max: 5,
-    mergeable: false },
+  rating: { type: Number, min: 0, max: 5, mergeable: false },
   comments: [ commentSchema ],
   nbComments: { type: Number, min: 0, default: 0, mergeable: false },
   checkIn: [ checkInSchema ],
@@ -113,6 +104,13 @@ var schema = new Schema({
   updatedAt: { type: Date, default: Date.now, required: true,
   mergeable: false }
 });
+
+/*
+ * Statics
+ */
+
+schema.statics.ALLOWED_UPDATE_FIELD =
+'-ratings -comments -checkIn';
 
 /*
  * Register

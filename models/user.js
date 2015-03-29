@@ -32,7 +32,8 @@ var schema = new Schema({
   validation: {
     token: { type: String },
     expires: { type: Date }
-  }
+  },
+  locale: { type: String }
 });
 
 /*
@@ -84,6 +85,11 @@ schema.pre('save', function(next) {
 /*
  * Statics
  */
+
+schema.statics.ALLOWED_CREATE_FIELD =
+'firstname lastname email password locale';
+schema.statics.ALLOWED_UPDATE_FIELD =
+'firstname lastname locale';
 
 schema.statics.generateRandomPassword = function() {
   var a = PASSWD_RANDOM_POSSIBILITIES;

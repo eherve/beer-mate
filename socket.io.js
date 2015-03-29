@@ -10,7 +10,7 @@ module.exports.connect = function(server) {
   io = socketIo(server, {});
   registered.forEach(function(reg) {
     var path = io.of(reg.path);
-    if (reg.middleware) { path.use(reg.middleware) }
+    if (reg.middleware) { path.use(reg.middleware); }
     path.on('connection', reg.cb);
   });
   registered = [];
@@ -32,19 +32,19 @@ module.exports.removeConnection = function(path, cb) {
 module.exports.userConnection = function(path, cb) {
   function middleware(socket, next) {
     var req = socket.request;
-    req.query = req._query
+    req.query = req._query;
     var res = socket.res;
     Auth.userConnected(req, res, next);
-  };
+  }
   module.exports.connection(path, middleware, cb);
 };
 
 module.exports.adminConnection = function(path, cb) {
   function middleware(socket, next) {
     var req = socket.request;
-    req.query = req._query
+    req.query = req._query;
     var res = socket.res;
     Auth.adminConnected(req, res, next);
-  };
+  }
   module.exports.connection(path, middleware, cb);
 };

@@ -8,8 +8,6 @@ var ForbiddenError = require('../../errors/forbiddenError');
 var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../../models/user');
 
-var ALLOWED_UPDATE_FIELD = 'firstname lastname';
-
 router.get('/', function(req, res, next) {
   var id = req.redisData.id;
   UserModel.findById(id, function(err, user) {
@@ -24,7 +22,7 @@ router.post('/', function(req, res, next) {
   UserModel.findById(id, function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
-    user.merge(req.body, { fields: ALLOWED_UPDATE_FIELD });
+    user.merge(req.body, { fields: UserModel.ALLOWED_UPDATE_FIELD });
     user.save(function(err) {
       if (err) { return next(err); }
       res.end();
@@ -32,11 +30,38 @@ router.post('/', function(req, res, next) {
   });
 });
 
+/* Locale */
+
+router.get('/locale', function(req, res, next) {
+  var id = req.redisData.id;
+  UserModel.findOne({ _id: new ObjectId(id) }, 'locale',
+  function(err, user) {
+    if (err) { return next(err); }
+    if (!user) { return next(new NotFoundError()); }
+    res.send(user.locale);
+  });
+});
+
+router.post('/favorites', function(req, res, next) {
+  var id = req.redisData.id;
+  if (!req.body.pubId || !ObjectId.isValid(req.body.pubId)) {
+    return next(new BadRequestError());
+  }
+  UserModel.update({ _id: id },
+    { $set: { locale: req.body.locale } },
+    function(err) {
+      if (err) { return next(err); }
+      res.end();
+    }
+  );
+});
+
 /* Favorites */
 
 router.get('/favorites', function(req, res, next) {
   var id = req.redisData.id;
-  UserModel.findOne({ _id: new ObjectId(id) }, function(err, user) {
+  UserModel.findOne({ _id: new ObjectId(id) }, 'favorites',
+  function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
     res.send(user.favorites);

@@ -9,8 +9,6 @@ var Filter = require('../../tools/filter');
 var ObjectId = require('mongoose').Types.ObjectId;
 var PubModel = require('../../models/pub');
 
-var ALLOWED_UPDATE_FIELD = '-ratings -comments -checkIn';
-
 function addNearFilter(filters, query) {
   filters['address.loc'] = {
     $nearSphere: {
@@ -110,7 +108,7 @@ router.put('/:pubId', Auth.userConnected, function(req, res, next) {
   PubModel.findById(id, function(err, pub) {
     if (err) { return next(err); }
     if (!pub) { return next(new NotFoundError()); }
-    pub.merge(req.body, { fields: ALLOWED_UPDATE_FIELD });
+    pub.merge(req.body, { fields: PubModel.ALLOWED_UPDATE_FIELD });
     pub.updatedAt = Date.now();
     pub.save(function(err) {
       if (err) { return next(err); }
@@ -180,12 +178,31 @@ router.post('/:pubId/comments', Auth.userConnected, function(req, res, next) {
 
 /* Ratings */
 
+router.get('/:pubId/rating', function(req, res, next) {
+  var id = req.params.pubId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  PubModel.findById(id, 'rating', function(err, pub) {
+    if (err) { return next(err); }
+    res.send({ rating: pub.rating });
+  });
+});
+
+router.get('/:pubId/my-rating', Auth.userConnected, function(req, res, next) {
+  var id = req.params.pubId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  var field = { ratings: { $elemMatch: { userId: req.redisData.id } } };
+  PubModel.findById(id, field, function(err, pub) {
+    if (err) { return next(err); }
+    res.send(pub.ratings.length > 0 ? pub.ratings[0] : {});
+  });
+});
+
 router.get('/:pubId/ratings', function(req, res, next) {
   var id = req.params.pubId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  PubModel.findById(id, 'ratings', function(err, pub) {
+  PubModel.findById(id, 'ratings rating', function(err, pub) {
     if (err) { return next(err); }
-    res.send(pub.ratings);
+    res.send(pub);
   });
 });
 
@@ -198,12 +215,12 @@ router.post('/:pubId/ratings', Auth.userConnected, function(req, res, next) {
     for (var index = 0; index < pub.ratings.length; ++index) {
       var rating = pub.ratings[index];
       if (rating && rating.userId && rating.userId.equals(userId)) {
-        found = true; rating.note = req.body.note; rating.createdAt = null;
+        found = true; rating.note = req.body.note; delete rating.createdAt;
       }
       avg = avg + rating.note;
     }
     if (!found) {
-      req.body.userId = userId; req.body.createdAt = null;
+      req.body.userId = userId; delete req.body.createdAt;
       pub.ratings.push(req.body);
       avg = avg + parseInt(req.body.note);
     }

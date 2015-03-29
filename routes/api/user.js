@@ -13,9 +13,6 @@ var Resource = require('../../resource');
 var Email = require('../../email');
 var emailLogger = require('../../logger').get('Email');
 
-var ALLOWED_CREATE_FIELD = 'firstname lastname email password';
-var ALLOWED_UPDATE_FIELD = 'firstname lastname';
-
 router.get('/', Auth.adminConnected, function(req, res, next) {
   UserModel.find(function(err, users) {
     if (err) { return next(err); }
@@ -25,7 +22,7 @@ router.get('/', Auth.adminConnected, function(req, res, next) {
 
 router.post('/', Auth.adminConnected, function(req, res, next) {
   var user = new UserModel();
-  user.merge(req.body, { fields: ALLOWED_CREATE_FIELD });
+  user.merge(req.body, { fields: UserModel.ALLOWED_CREATE_FIELD });
   user.save(function(err) {
     if (err) { return next(err); }
     res.end();
@@ -49,7 +46,7 @@ router.put('/:userId', Auth.userConnected, function(req, res, next) {
   UserModel.findById(id, function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
-    user.merge(req.body, { fields: ALLOWED_UPDATE_FIELD });
+    user.merge(req.body, { fields: UserModel.ALLOWED_UPDATE_FIELD });
     user.save(function(err) {
       if (err) { return next(err); }
       res.end();
