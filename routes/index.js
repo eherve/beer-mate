@@ -1,28 +1,39 @@
 'use strict';
 
+var appConfig = require('../config/application.json');
 var logger = require('../logger').get('Route');
 var api = require('./api');
-var admin = require('./admin');
+var AccessModel = require('../models/access');
+
+function accessLog(req, res, next) {
+  if (appConfig['access_log'] === true) {
+    var access = new AccessModel({ ip: req.ip, path: req.path });
+    access.save(function(err) {
+      if (err) { logger.error('Access log', err); }
+    });
+  }
+  next();
+}
+
+function notFound(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+}
+
+function error(err, req, res, next) { // jshint ignore:line
+  var status = err.status || (err.name === 'ValidationError' ? 400 : 500);
+  if (status === 500) { logger.error(err.message, err); }
+  else { logger.debug(err.message, err); }
+  res.status(status);
+  res.send(process.env.NODE_ENV === 'development' ? err : null);
+}
 
 module.exports = function(app) {
 
+  app.use(accessLog);
   api(app);
-  admin(app);
-
-  // Not found
-  app.use(function(req, res, next) {
-    var err = new Error('Not Found');
-    err.status = 404;
-    next(err);
-  });
-
-  // Error
-  app.use(function(err, req, res, next) { // jshint ignore:line
-    var status = err.status || (err.name === 'ValidationError' ? 400 : 500);
-    if (status === 500) { logger.error(err.message, err); }
-    else { logger.debug(err.message, err); }
-    res.status(status);
-    res.send(process.env.NODE_ENV === 'development' ? err : null);
-  });
+  app.use(notFound);
+  app.use(error);
 
 };
