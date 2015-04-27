@@ -1,19 +1,7 @@
 'use strict';
 
-var appConfig = require('../config/application.json');
 var logger = require('../logger').get('Route');
 var api = require('./api');
-var AccessModel = require('../models/access');
-
-function accessLog(req, res, next) {
-  if (appConfig['access_log'] === true) {
-    var access = new AccessModel({ ip: req.ip, path: req.path });
-    access.save(function(err) {
-      if (err) { logger.error('Access log', err); }
-    });
-  }
-  next();
-}
 
 function notFound(req, res, next) {
   var err = new Error('Not Found');
@@ -31,7 +19,6 @@ function error(err, req, res, next) { // jshint ignore:line
 
 module.exports = function(app) {
 
-  app.use(accessLog);
   api(app);
   app.use(notFound);
   app.use(error);
