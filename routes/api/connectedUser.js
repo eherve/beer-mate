@@ -83,7 +83,7 @@ router.post('/favorites', function(req, res, next) {
 router.delete('/favorites', function(req, res, next) {
   var id = req.redisData.id;
   UserModel.update({ _id: id },
-    { $pull: { favorites: new ObjectId(req.body.pubId) } },
+    { $pull: { favorites: new ObjectId(req.body.pubId || req.query.pubId) } },
     function(err) {
       if (err) { return next(err); }
       res.end();
