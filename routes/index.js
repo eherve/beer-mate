@@ -2,6 +2,7 @@
 
 var logger = require('../logger').get('Route');
 var api = require('./api');
+var admin = require('./admin');
 
 function notFound(req, res, next) {
   var err = new Error('Not Found');
@@ -18,9 +19,8 @@ function error(err, req, res, next) { // jshint ignore:line
 }
 
 module.exports = function(app) {
-
   api(app);
+  admin(app);
   app.use(notFound);
   app.use(error);
-
 };

@@ -42,7 +42,7 @@ var schema = new Schema({
     token: { type: String },
     expires: { type: Date }
   },
-  locale: { type: String }
+  locale: { type: String, validate: localeValidator }
 });
 
 /*

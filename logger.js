@@ -34,7 +34,8 @@ Stream.prototype.history = function() {
 Stream.prototype.source = function(logger) {
   var self = this;
   logger.on('logging', function(transport, level, msg, meta) {
-    var data = { transport: transport, level: level, msg: msg, meta: meta };
+    var data = { transport: transport, level: level, msg: msg, meta: meta,
+      time: Date.now() };
     self.cbuffer.push(data);
     self.emit('logging', data);
   });
