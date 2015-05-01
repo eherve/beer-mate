@@ -17,29 +17,28 @@ var Auth = require('../../tools/auth');
 
 var CONFIRM_EXPIRATION_DELAY = 24 * 60 * 60 * 1000;
 
-function validateFacebookTokenReq(tk, cb) {
+function validateFbTokenReq(tk, cb) {
   var options = {
     hostname: 'graph.facebook.com',
     port: 443,
-    path: util.format(
-      '/debug_token?access_token=%s&input_token=%s',
-      '912425342135498', tk),
+    path: util.format('/me?access_token=%s', tk),
     method: 'GET'
   };
   var req = https.request(options, function(res) {
     res.setEncoding('utf8');
     res.on('data', function(data) {
+      data = JSON.parse(data);
       if (res.statusCode === 200) { cb(null, data); }
       else {
-        var err = JSON.parse(data).error;
-        err.status = res.statusCode;
-        cb(err);
+        data.error.status = res.statusCode;
+        cb(data.error);
       }
     });
   });
   req.end();
   req.on('error', cb);
 }
+
 
 // Login
 
@@ -64,11 +63,22 @@ router.post('/facebook-login', function(req, res, next) {
   Auth.userConnected(req, res, function(err) {
     if (!err) { return Auth.sendToken(req, res, req.redisData.token); }
     if (!req.body.facebookToken) { return next(new BadRequestError()); }
-    logger.debug(util.format('Facebook login user %s', req.body.facebookToken));
-    validateFacebookTokenReq(req.body.facebookToken, function(err, data) {
+    logger.debug(util.format('Facebook user token %s', req.body.facebookToken));
+    validateFbTokenReq(req.body.facebookToken, function(err, data) {
       if (err) { return next(err); }
-      // TODO
-      next();
+      logger.debug(util.format('facebook user id %s', data.id));
+      UserModel.findOne({ facebookId: data.id }, '_id locale administrator',
+      function(err, user) {
+        if (err) { return next(err); }
+        if (user) { req.user = user; return next(); }
+        (new UserModel({ email: data.email, facebookId: data.id,
+          firstname: data.first_name, lastname: data.last_name,
+          password: UserModel.generateRandomPassword() }))
+        .save(function(err, user) {
+          if (err) { return next(err); }
+          req.user = user; next();
+        });
+      });
     });
   });
 }, Auth.login);

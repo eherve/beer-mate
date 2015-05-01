@@ -26,6 +26,7 @@ var localeValidator = [
 ];
 
 var schema = new Schema({
+  facebookId: { type: String },
   firstname: { type: String, required: true },
   lastname: { type: String, required: true },
   email: { type: String, required: true, validate: emailValidator },
