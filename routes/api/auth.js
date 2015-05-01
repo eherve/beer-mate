@@ -35,6 +35,15 @@ router.post('/login', function(req, res, next) {
   });
 }, Auth.login);
 
+router.post('/facebook-login', function(req, res, next) {
+  Auth.userConnected(req, res, function(err) {
+    if (!err) { return Auth.sendToken(req, res, req.redisData.token); }
+    if (!req.body.facebookToken) { return next(new BadRequestError()); }
+    logger.debug(util.format('Facebook login user %s', req.body.facebookToken));
+    next();
+  });
+}, Auth.login);
+
 // Logout
 
 router.get('/logout', Auth.userConnected, function(req, res, next) {
