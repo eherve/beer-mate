@@ -4,6 +4,7 @@ var express = require('express');
 var router = express.Router();
 var util = require('util');
 var uuid = require('node-uuid');
+var https = require('https');
 var logger = require('../../logger').get('Route');
 var NotFoundError = require('../../errors/notFoundError');
 var UnauthorizedError = require('../../errors/unauthorizedError');
@@ -15,6 +16,30 @@ var Email = require('../../email');
 var Auth = require('../../tools/auth');
 
 var CONFIRM_EXPIRATION_DELAY = 24 * 60 * 60 * 1000;
+
+function validateFacebookTokenReq(tk, cb) {
+  var options = {
+    hostname: 'graph.facebook.com',
+    port: 443,
+    path: util.format(
+      '/debug_token?access_token=%s&input_token=%s',
+      '912425342135498', tk),
+    method: 'GET'
+  };
+  var req = https.request(options, function(res) {
+    res.setEncoding('utf8');
+    res.on('data', function(data) {
+      if (res.statusCode === 200) { cb(null, data); }
+      else {
+        var err = JSON.parse(data).error;
+        err.status = res.statusCode;
+        cb(err);
+      }
+    });
+  });
+  req.end();
+  req.on('error', cb);
+}
 
 // Login
 
@@ -40,7 +65,11 @@ router.post('/facebook-login', function(req, res, next) {
     if (!err) { return Auth.sendToken(req, res, req.redisData.token); }
     if (!req.body.facebookToken) { return next(new BadRequestError()); }
     logger.debug(util.format('Facebook login user %s', req.body.facebookToken));
-    next();
+    validateFacebookTokenReq(req.body.facebookToken, function(err, data) {
+      if (err) { return next(err); }
+      // TODO
+      next();
+    });
   });
 }, Auth.login);
 
