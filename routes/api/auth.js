@@ -16,6 +16,14 @@ var Email = require('../../email');
 var Auth = require('../../tools/auth');
 
 var CONFIRM_EXPIRATION_DELAY = 24 * 60 * 60 * 1000;
+var FB_FIRSTNAME_KEY = 'first_name';
+var FB_LASTNAME_KEY = 'last_name';
+
+function buildUserFromFbData(data) {
+  return new UserModel({ email: data.email, facebookId: data.id,
+    firstname: data[FB_FIRSTNAME_KEY], lastname: data[FB_LASTNAME_KEY],
+    password: UserModel.generateRandomPassword() });
+}
 
 function validateFbTokenReq(tk, cb) {
   var options = {
@@ -71,10 +79,7 @@ router.post('/facebook-login', function(req, res, next) {
       function(err, user) {
         if (err) { return next(err); }
         if (user) { req.user = user; return next(); }
-        (new UserModel({ email: data.email, facebookId: data.id,
-          firstname: data.first_name, lastname: data.last_name,
-          password: UserModel.generateRandomPassword() }))
-        .save(function(err, user) {
+        buildUserFromFbData(data).save(function(err, user) {
           if (err) { return next(err); }
           req.user = user; next();
         });
