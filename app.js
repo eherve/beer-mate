@@ -31,6 +31,15 @@ if (fs.existsSync(faviconFile)) {
   app.use(favicon(faviconFile));
 }
 
+if (process.env.NODE_ENV === 'development') {
+  app.use(function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTION');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+  });
+}
+
 // Routes
 require('./routes')(app);
 
