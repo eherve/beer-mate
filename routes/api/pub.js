@@ -245,6 +245,40 @@ router.get('/:pubId/checkin', function(req, res, next) {
   });
 });
 
+function addPubCheckin(checkin, cb) {
+  PubModel.update({ _id: checkin.pub },
+    { $addToSet: { checkin: checkin._id } },
+    function(err) {
+      if (!err) { return cb(); }
+      var errs = [ err ];
+      UserModel.update({ _id: checkin.user },
+        { $pull: { checkin: checkin._id } },
+        function(err) {
+          if (err) { errs.push(err); }
+          CheckinModel.remove({ _id: checkin._id }, function(err) {
+            if (err) { errs.push(err); }
+            cb(errs);
+          });
+        }
+      );
+    }
+  );
+}
+
+function addUserCheckin(checkin, cb) {
+  UserModel.update({ _id: checkin.user },
+    { $addToSet: { checkin: checkin._id } },
+    function(err) {
+      if (!err) { return cb(); }
+      var errs = [ err ];
+      CheckinModel.remove({ _id: checkin._id }, function(err) {
+        if (err) { errs.push(err); }
+        cb(errs);
+      });
+    }
+  );
+}
+
 router.post('/:pubId/checkin', Auth.userConnected, function(req, res, next) {
   var pubId = req.params.pubId;
   if (!ObjectId.isValid(pubId)) { return next(new NotFoundError()); }
@@ -254,19 +288,13 @@ router.post('/:pubId/checkin', Auth.userConnected, function(req, res, next) {
   checkin.pub = pubId;
   checkin.save(function(err, checkin) {
     if (err) { return next(err); }
-    UserModel.update({ _id: checkin.user },
-      { $addToSet: { checkin: checkin._id } },
-      function(err) {
-        if (err) { return next(err); } // TODO delete checkin
-        PubModel.update({ _id: checkin.pub },
-          { $addToSet: { checkin: checkin._id } },
-          function(err) {
-            if (err) { return next(err); } // TODO delete checkin & User data
-            res.end();
-          }
-        );
-      }
-    );
+    addUserCheckin(checkin, function(err) {
+      if (err) { return next(err); }
+      addPubCheckin(checkin, function(err) {
+        if (err) { return next(err); }
+        res.end();
+      });
+    });
   });
 });
 
