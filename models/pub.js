@@ -37,11 +37,6 @@ var noteValidator = [
   })
 ];
 
-var checkInSchema = new Schema({
-  date: { type: Date, default: Date.now, required: true },
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true }
-});
-
 var ratingSchema = new Schema({
   note: { type: Number, validate: noteValidator, required: true,
     min: 0, max: 5 },
@@ -93,7 +88,7 @@ var schema = new Schema({
   rating: { type: Number, min: 0, max: 5, mergeable: false },
   comments: [ commentSchema ],
   nbComments: { type: Number, min: 0, default: 0, mergeable: false },
-  checkIn: [ checkInSchema ],
+  checkin: [ { type: Schema.Types.ObjectId, ref: 'Checkin' } ],
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true,
     mergeable: false },
   enabled: { type: Boolean, default: true, required: true, mergeable: false },

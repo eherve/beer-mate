@@ -8,6 +8,8 @@ var Auth = require('../../tools/auth');
 var Filter = require('../../tools/filter');
 var ObjectId = require('mongoose').Types.ObjectId;
 var PubModel = require('../../models/pub');
+var UserModel = require('../../models/user');
+var CheckinModel = require('../../models/checkin');
 
 function addNearFilter(filters, query) {
   filters['address.loc'] = {
@@ -234,26 +236,37 @@ router.post('/:pubId/ratings', Auth.userConnected, function(req, res, next) {
 
 /* CheckIn */
 
-router.get('/:pubId/check-in', function(req, res, next) {
+router.get('/:pubId/checkin', function(req, res, next) {
   var id = req.params.pubId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  PubModel.findById(id, 'checkIn', function(err, pub) {
+  CheckinModel.find({ pub: id }, function(err, checkin) {
     if (err) { return next(err); }
-    res.send(pub.checkIn);
+    res.send(checkin);
   });
 });
 
-router.post('/:pubId/check-in', Auth.userConnected, function(req, res, next) {
-  var id = req.params.pubId;
-  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  PubModel.findById(id, 'checkIn', function(err, pub) {
+router.post('/:pubId/checkin', Auth.userConnected, function(req, res, next) {
+  var pubId = req.params.pubId;
+  if (!ObjectId.isValid(pubId)) { return next(new NotFoundError()); }
+  req.body.date = Date.now();
+  var checkin = new CheckinModel(req.body);
+  checkin.user = req.redisData.id;
+  checkin.pub = pubId;
+  checkin.save(function(err, checkin) {
     if (err) { return next(err); }
-    req.body.userId = req.redisData.id;
-    pub.checkIn.push(req.body);
-    pub.save(function(err) {
-      if (err) { return next(err); }
-      res.end();
-    });
+    UserModel.update({ _id: checkin.user },
+      { $addToSet: { checkin: checkin._id } },
+      function(err) {
+        if (err) { return next(err); } // TODO delete checkin
+        PubModel.update({ _id: checkin.pub },
+          { $addToSet: { checkin: checkin._id } },
+          function(err) {
+            if (err) { return next(err); } // TODO delete checkin & User data
+            res.end();
+          }
+        );
+      }
+    );
   });
 });
 

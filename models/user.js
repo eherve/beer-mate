@@ -31,6 +31,7 @@ var schema = new Schema({
   lastname: { type: String, required: true },
   email: { type: String, required: true, validate: emailValidator },
   favorites: [ { type: Schema.Types.ObjectId, ref: 'Pub' } ],
+  checkin: [ { type: Schema.Types.ObjectId, ref: 'Checkin' } ],
   password: { type: String, select: false, required: true },
   passwordreset: {
     date: { type: Date},
