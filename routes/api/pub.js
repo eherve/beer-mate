@@ -245,6 +245,15 @@ router.get('/:pubId/checkin', function(req, res, next) {
   });
 });
 
+router.get('/:pubId/checkin/count', function(req, res, next) {
+  var id = req.params.pubId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  CheckinModel.count({ pub: id }, function(err, count) {
+    if (err) { return next(err); }
+    res.send({ total: count });
+  });
+});
+
 function addPubCheckin(checkin, cb) {
   PubModel.update({ _id: checkin.pub },
     { $addToSet: { checkin: checkin._id } },
