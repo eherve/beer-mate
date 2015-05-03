@@ -7,6 +7,7 @@ var BadRequestError = require('../../errors/badRequestError');
 var ForbiddenError = require('../../errors/forbiddenError');
 var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../../models/user');
+var CheckinModel = require('../../models/checkin');
 
 router.get('/', function(req, res, next) {
   var id = req.redisData.id;
@@ -111,5 +112,22 @@ router.post('/change-password', function(req, res, next) {
   });
 });
 
+/* CheckIn */
+
+router.get('/checkin', function(req, res, next) {
+  var id = req.redisData.id;
+  CheckinModel.find({ user: id }, function(err, checkin) {
+    if (err) { return next(err); }
+    res.send(checkin);
+  });
+});
+
+router.get('/checkin/count', function(req, res, next) {
+  var id = req.redisData.id;
+  CheckinModel.count({ user: id }, function(err, count) {
+    if (err) { return next(err); }
+    res.send({ total: count });
+  });
+});
 
 module.exports = router;
