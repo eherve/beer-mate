@@ -22,7 +22,7 @@ var FB_LASTNAME_KEY = 'last_name';
 function buildUserFromFbData(data) {
   return new UserModel({ email: data.email, facebookId: data.id,
     firstname: data[FB_FIRSTNAME_KEY], lastname: data[FB_LASTNAME_KEY],
-    password: UserModel.generateRandomPassword() });
+    validated: true, password: UserModel.generateRandomPassword() });
 }
 
 function validateFbTokenReq(tk, cb) {
