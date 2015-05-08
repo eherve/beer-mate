@@ -47,6 +47,11 @@ tmp
 .ctags
 .ctags-*
 
+#################
+# Ignore VSCode #
+#################
+.settings
+
 lib-cov
 pids
 dist
