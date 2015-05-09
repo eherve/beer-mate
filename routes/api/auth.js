@@ -9,6 +9,7 @@ var logger = require('../../logger').get('Route');
 var NotFoundError = require('../../errors/notFoundError');
 var UnauthorizedError = require('../../errors/unauthorizedError');
 var BadRequestError = require('../../errors/badRequestError');
+var UnprocessableEntityError = require('../../errors/unprocessableEntityError');
 var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../../models/user');
 var Resource = require('../../resource');
@@ -79,9 +80,16 @@ router.post('/facebook-login', function(req, res, next) {
       function(err, user) {
         if (err) { return next(err); }
         if (user) { req.user = user; return next(); }
-        buildUserFromFbData(data).save(function(err, user) {
+        UserModel.findOne({ email: data.email }, '_id', function(err, user) {
           if (err) { return next(err); }
-          req.user = user; next();
+          if (user) {
+            return next(
+              new UnprocessableEntityError('error.user.email.unique'));
+          }
+          buildUserFromFbData(data).save(function(err, user) {
+            if (err) { return next(err); }
+            req.user = user; next();
+          });
         });
       });
     });
@@ -114,15 +122,22 @@ router.post('/join', function(req, res, next) {
   var email = req.body.email;
   var password = req.body.password;
   if (!email || !password) { return next(new BadRequestError()); }
-  var token = uuid.v4();
-  var expires = new Date(Date.now() + CONFIRM_EXPIRATION_DELAY);
-  (new UserModel({ email: email, password: password,
-    validation: { token: token, expires: expires }
-  })).save(function(err, user) {
+  UserModel.findOne({ email: email }, '_id', function(err, user) {
     if (err) { return next(err); }
-    sendConfirmationEmail(req, user, token, expires);
-    res.end();
-  });
+    if (user) {
+      return next(
+        new UnprocessableEntityError('error.user.email.unique'));
+    }
+    var token = uuid.v4();
+    var expires = new Date(Date.now() + CONFIRM_EXPIRATION_DELAY);
+    (new UserModel({ email: email, password: password,
+      validation: { token: token, expires: expires }
+    })).save(function(err, user) {
+      if (err) { return next(err); }
+      sendConfirmationEmail(req, user, token, expires);
+      res.end();
+      });
+    });
 });
 
 // Confirm
