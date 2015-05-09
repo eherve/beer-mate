@@ -1,3 +1,4 @@
+/// <reference path="../typings/node/node.d.ts"/>
 'use strict';
 
 var logger = require('../logger').get('Route');
