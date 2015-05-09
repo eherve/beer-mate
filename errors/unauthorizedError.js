@@ -2,7 +2,8 @@
 
 var util = require('util');
 
-var UnauthorizedError = module.exports = function UnauthorizedError(description) {
+var UnauthorizedError = module.exports =
+function UnauthorizedError(description) {
   Error.call(this);
   this.message = 'Unauthorized';
   this.stack = (new Error()).stack;
