@@ -58,8 +58,13 @@ router.post('/locale', function(req, res, next) {
 
 router.get('/favorites', function(req, res, next) {
   var id = req.redisData.id;
-  UserModel.findOne({ _id: new ObjectId(id) }, 'favorites',
-  function(err, user) {
+  var query = UserModel.findOne({ _id: new ObjectId(id) }, 'favorites');
+  if (req.query.load === 'true') {
+    var populate = { path:'favorites' };
+    if (req.query.loadFields) { populate.select = req.query.loadFields; }
+    query.populate(populate);
+  }
+  query.exec(function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }
     res.send(user.favorites);
