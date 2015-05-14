@@ -7,6 +7,8 @@ function modifyAccount(cb) {
     user.email = 'darko@beermate.io';
     user.password = 'darko42';
     user.validated = true;
+    user.firstname = 'Darko';
+    user.lastname = 'Kuzmanovski';
     user.save(cb);
   });
 }
@@ -15,13 +17,15 @@ function createAccount(cb) {
   var UserModel = require('../models/user');
   var user = new UserModel({
     email: 'fregux@beermate.io', password: 'fregux42',
-    administrator: true, validated: true
+    administrator: true, validated: true,
+    firstname: 'François-Régis', lastname: 'Robert'
   });
   user.save(function(err) {
     if (err) { return cb(err); }
     user = new UserModel({
       email: 'eherve@beermate.io', password: 'eherve42',
-      administrator: true, validated: true
+      administrator: true, validated: true,
+      firstname: 'Eric', lastname: 'Hervé'
     });
     user.save(cb);
   });
