@@ -8,8 +8,6 @@ var Auth = require('../../tools/auth');
 var Filter = require('../../tools/filter');
 var ObjectId = require('mongoose').Types.ObjectId;
 var PubModel = require('../../models/pub');
-var UserModel = require('../../models/user');
-var CheckinModel = require('../../models/checkin');
 
 function addNearFilter(filters, query) {
   filters['address.loc'] = {
@@ -230,79 +228,6 @@ router.post('/:pubId/ratings', Auth.userConnected, function(req, res, next) {
     pub.save(function(err) {
       if (err) { return next(err); }
       res.end();
-    });
-  });
-});
-
-/* CheckIn */
-
-router.get('/:pubId/checkin', function(req, res, next) {
-  var id = req.params.pubId;
-  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  CheckinModel.find({ pub: id }, function(err, checkin) {
-    if (err) { return next(err); }
-    res.send(checkin);
-  });
-});
-
-router.get('/:pubId/checkin/count', function(req, res, next) {
-  var id = req.params.pubId;
-  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  CheckinModel.count({ pub: id }, function(err, count) {
-    if (err) { return next(err); }
-    res.send({ total: count });
-  });
-});
-
-function addPubCheckin(checkin, cb) {
-  PubModel.update({ _id: checkin.pub },
-    { $addToSet: { checkin: checkin._id } },
-    function(err) {
-      if (!err) { return cb(); }
-      var errs = [ err ];
-      UserModel.update({ _id: checkin.user },
-        { $pull: { checkin: checkin._id } },
-        function(err) {
-          if (err) { errs.push(err); }
-          CheckinModel.remove({ _id: checkin._id }, function(err) {
-            if (err) { errs.push(err); }
-            cb(errs);
-          });
-        }
-      );
-    }
-  );
-}
-
-function addUserCheckin(checkin, cb) {
-  UserModel.update({ _id: checkin.user },
-    { $addToSet: { checkin: checkin._id } },
-    function(err) {
-      if (!err) { return cb(); }
-      var errs = [ err ];
-      CheckinModel.remove({ _id: checkin._id }, function(err) {
-        if (err) { errs.push(err); }
-        cb(errs);
-      });
-    }
-  );
-}
-
-router.post('/:pubId/checkin', Auth.userConnected, function(req, res, next) {
-  var pubId = req.params.pubId;
-  if (!ObjectId.isValid(pubId)) { return next(new NotFoundError()); }
-  req.body.date = Date.now();
-  var checkin = new CheckinModel(req.body);
-  checkin.user = req.redisData.id;
-  checkin.pub = pubId;
-  checkin.save(function(err, checkin) {
-    if (err) { return next(err); }
-    addUserCheckin(checkin, function(err) {
-      if (err) { return next(err); }
-      addPubCheckin(checkin, function(err) {
-        if (err) { return next(err); }
-        res.end();
-      });
     });
   });
 });
