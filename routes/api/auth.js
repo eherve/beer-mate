@@ -131,6 +131,7 @@ router.post('/join', function(req, res, next) {
     var token = uuid.v4();
     var expires = new Date(Date.now() + CONFIRM_EXPIRATION_DELAY);
     (new UserModel({ email: email, password: password,
+      firstname: req.body.firstname, lastname: req.body.lastname, 
       validation: { token: token, expires: expires }
     })).save(function(err, user) {
       if (err) { return next(err); }
