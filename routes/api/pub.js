@@ -30,24 +30,28 @@ function addNearFilter(filters, query) {
 }
 
 function addBoxFilter(filters, query) {
-  filters['address.loc'] = {
-    $geoWithin: {
-      $box: [
-        [ query.bottomLeftLongitude, query.bottomLeftLatitude ],
-        [ query.upperRightLongitude, query.upperRightLatitude ]
-      ]
-    }
-  };
+    filters['address.loc'] = {
+      $geoWithin: {
+        $box: [ [ query.SWLng, query.SWlat ], [ query.NELng, query.NElat ] ]
+      }
+    };
+}
+
+function addPolygonFilter(filters, query) {
+  var polygon = [];
+  query.polygon.forEach(function(data) { polygon.push(JSON.parse(data)); });
+  filters['address.loc'] = { $geoWithin: { $polygon: polygon } };
 }
 
 function addLocalizationFilter(filters, query) {
   if (query.longitude !== undefined && query.latitude !== undefined) {
     return addNearFilter(filters, query);
   }
-  if (query.bottomLeftLongitude !== undefined &&
-      query.bottomLeftLatitude !== undefined &&
-      query.upperRightLongitude !== undefined &&
-      query.upperRightLatitude !== undefined) {
+  if (query.polygon !== undefined) {
+    return addPolygonFilter(filters, query);
+  }
+  if (query.SWLng !== undefined && query.SWlat !== undefined &&
+      query.NELng !== undefined && query.NElat !== undefined) {
     return addBoxFilter(filters, query);
   }
 }
