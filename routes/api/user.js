@@ -29,9 +29,12 @@ router.post('/', Auth.adminConnected, function(req, res, next) {
   });
 });
 
-router.get('/:userId', Auth.adminConnected, function(req, res, next) {
+router.get('/:userId', Auth.userConnected, function(req, res, next) {
   var id = req.params.userId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+   if (!Auth.isAdmin(req) || req.redisData.id !== id) {
+    return next(new ForbiddenError());
+  }
   UserModel.findById(id, function(err, user) {
     if (err) { return next(err); }
     if (user) { return res.send(user); }
@@ -42,7 +45,9 @@ router.get('/:userId', Auth.adminConnected, function(req, res, next) {
 router.put('/:userId', Auth.userConnected, function(req, res, next) {
   var id = req.params.userId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  if (req.redisData.id !== id) { return next(new ForbiddenError()); }
+  if (!Auth.isAdmin(req) || req.redisData.id !== id) {
+    return next(new ForbiddenError());
+  }
   UserModel.findById(id, function(err, user) {
     if (err) { return next(err); }
     if (!user) { return next(new NotFoundError()); }

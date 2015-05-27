@@ -66,10 +66,14 @@ module.exports.userConnected = function(req, res, next) {
   });
 };
 
+module.exports.isAdmin = function(req) {
+  return req.user.administrator === true;
+};
+
 module.exports.adminConnected = function(req, res, next) {
   module.exports.userConnected(req, res, function(err) {
     if (err) { return next(err); }
-    if (req.user.administrator !== true) { return next(new ForbiddenError()); }
+    if (!module.exports.isAdmin(req)) { return next(new ForbiddenError()); }
     next();
   });
 };
