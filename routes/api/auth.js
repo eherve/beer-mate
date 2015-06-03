@@ -35,12 +35,16 @@ function validateFbTokenReq(tk, cb) {
   };
   var req = https.request(options, function(res) {
     res.setEncoding('utf8');
-    res.on('data', function(data) {
-      data = JSON.parse(data);
-      if (res.statusCode === 200) { cb(null, data); }
+    var fbData = '';
+    res.on('data', function(data) { fbData += data; });
+    res.on('end', function() {
+      try {
+        fbData = JSON.parse(fbData);
+      } catch (err) { cb(err); }
+      if (res.statusCode === 200) { cb(null, fbData); }
       else {
-        data.error.status = res.statusCode;
-        cb(data.error);
+        fbData.error.status = res.statusCode;
+        cb(fbData.error);
       }
     });
   });

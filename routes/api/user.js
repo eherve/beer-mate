@@ -32,7 +32,7 @@ router.post('/', Auth.adminConnected, function(req, res, next) {
 router.get('/:userId', Auth.userConnected, function(req, res, next) {
   var id = req.params.userId;
   if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-   if (!Auth.isAdmin(req) || req.redisData.id !== id) {
+   if (!Auth.isAdmin(req) && req.redisData.id !== id) {
     return next(new ForbiddenError());
   }
   UserModel.findById(id, function(err, user) {

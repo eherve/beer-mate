@@ -53,6 +53,11 @@ tmp
 .settings
 typings
 
+#################
+# Ignore WS     #
+#################
+.idea
+
 lib-cov
 pids
 dist
