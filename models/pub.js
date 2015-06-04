@@ -93,11 +93,15 @@ var schema = new Schema({
     mergeable: false },
   enabled: { type: Boolean, default: true, required: true, mergeable: false },
   validated: { type: Boolean, default: false, required: true,
-  mergeable: false },
+    mergeable: false },
   createdAt: { type: Date, default: Date.now, required: true,
-  mergeable: false },
+    mergeable: false },
   updatedAt: { type: Date, default: Date.now, required: true,
-  mergeable: false }
+    mergeable: false },
+  google: {
+    placeId: { type: String, default: null },
+    processed: { type: Boolean, default: false }
+  }
 });
 
 /*

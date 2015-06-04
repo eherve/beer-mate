@@ -6,5 +6,8 @@
 				"options": {
 						"auth_pass": "redisAdmin"
 				}
-		}
+		},
+    "google": {
+      "placeKey": "AIzaSyAzZYZkULE6-yPXUwvbZ1vwSTyLCnhBmmw"
+    }
 }

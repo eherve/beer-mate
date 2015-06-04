@@ -6,6 +6,7 @@ var user = require('./user');
 var pub = require('./pub');
 var connectedUser = require('./connectedUser');
 var checkin = require('./checkin');
+var google = require('./google');
 
 module.exports = function(app) {
   app.use('/api/auth', auth);
@@ -13,4 +14,5 @@ module.exports = function(app) {
   app.use('/api/pubs', pub);
   app.use('/api/user', Auth.userConnected, connectedUser);
   app.use('/api/checkin', checkin);
+  app.use('/api/google', google);
 };
