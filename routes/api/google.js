@@ -31,11 +31,11 @@ router.get('/mismatch', Auth.adminConnected, function(req, res, next) {
 });
 
 function buildPath(query, name, loc) {
-  return '/maps/api/place/radarsearch/json'
+  return '/maps/api/place/nearbysearch/json'
     .concat('?types=').concat('bar')
     .concat('&location=').concat(loc[1]).concat(',').concat(loc[0])
     .concat('&radius=').concat(query.radius || 50)
-    .concat('&keyword=').concat(encodeURIComponent(name))
+    .concat('&name=').concat(encodeURIComponent(name))
     .concat('&key=').concat(GOOGLE_PLACE_KEY);
 }
 
