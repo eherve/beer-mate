@@ -39,9 +39,9 @@ function buildPath(query, name, loc) {
     .concat('&location=').concat(loc[1]).concat(',').concat(loc[0])
     .concat('&radius=').concat(query.radius || 50);
   if (name) {
-    path.concat('&name=').concat(encodeURIComponent(name));
+    path = path.concat('&name=').concat(encodeURIComponent(name));
   }
-  path.concat('&key=').concat(GOOGLE_PLACE_KEY);
+  path = path.concat('&key=').concat(GOOGLE_PLACE_KEY);
   return path;
 }
 
