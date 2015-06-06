@@ -45,7 +45,7 @@ function buildPath(query, name, loc) {
   return path;
 }
 
-function buildGoogleError(data) {
+function buildGoogleError(res, data) {
   logger.error('google fetch', data);
   var err = new Error();
   err.status = res.statusCode;
@@ -60,16 +60,16 @@ function fetchGooglePub(query, name, loc, cb) {
   logger.debug(util.format('google fetch options', options));
   var req = https.request(options, function(res) {
     res.setEncoding('utf8');
-    var ggData = '';
-    res.on('data', function(data) { ggData += data; });
+    var ggd = '';
+    res.on('data', function(data) { ggd += data; });
     res.on('end', function() {
       if (res.statusCode === 200) {
-        try { ggData = JSON.parse(ggData); }
+        try { ggd = JSON.parse(ggd); }
         catch (err) { return cb(err); }
-        if (ggDate.status !== 'OK') { return cb(buildGoogleError(ggData)); }
-        logger.debug('google fetch', ggData);
-        cb(null, ggData);
-      } else { return cb(buildGoogleError(ggData)); }
+        if (ggd.status !== 'OK') { return cb(buildGoogleError(res, ggd)); }
+        logger.debug('google fetch', ggd);
+        cb(null, ggd);
+      } else { return cb(buildGoogleError(res, ggd)); }
     });
   });
   req.end();
