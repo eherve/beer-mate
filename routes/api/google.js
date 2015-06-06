@@ -66,7 +66,9 @@ function fetchGooglePub(query, name, loc, cb) {
       if (res.statusCode === 200) {
         try { ggd = JSON.parse(ggd); }
         catch (err) { return cb(err); }
-        if (ggd.status !== 'OK') { return cb(buildGoogleError(res, ggd)); }
+        if (['OK', 'ZERO_RESULTS'].indexOf(ggd.status) === -1) {
+          return cb(buildGoogleError(res, ggd));
+        }
         logger.debug('google fetch', ggd);
         cb(null, ggd);
       } else { return cb(buildGoogleError(res, ggd)); }
