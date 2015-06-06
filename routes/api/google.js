@@ -45,6 +45,13 @@ function buildPath(query, name, loc) {
   return path;
 }
 
+function buildGoogleError(data) {
+  logger.error('google fetch', data);
+  var err = new Error();
+  err.status = res.statusCode;
+  return err;
+}
+
 function fetchGooglePub(query, name, loc, cb) {
   var options = {
     hostname: 'maps.googleapis.com', port: 443, method: 'GET',
@@ -59,14 +66,10 @@ function fetchGooglePub(query, name, loc, cb) {
       if (res.statusCode === 200) {
         try { ggData = JSON.parse(ggData); }
         catch (err) { return cb(err); }
+        if (ggDate.status !== 'OK') { return cb(buildGoogleError(ggData)); }
         logger.debug('google fetch', ggData);
         cb(null, ggData);
-      } else {
-        logger.error('google fetch', ggData);
-        var err = new Error();
-        err.status = res.statusCode;
-        cb(err);
-      }
+      } else { return cb(buildGoogleError(ggData)); }
     });
   });
   req.end();
