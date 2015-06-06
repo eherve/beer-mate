@@ -74,7 +74,7 @@ function fetchGooglePub(query, name, loc, cb) {
 
 function updatingPub(pub, data, cb) {
   pub.google.processed = true;
-  pub.google.processTime = Date.now;
+  pub.google.processTime = new Date();
   if (data && data.results && data.results.length === 1) {
     pub.google.placeId = data.results[0][PLACE_ID_PARAM];
   }
@@ -115,9 +115,10 @@ router.get('/process/:pubId', Auth.adminConnected, function(req, res, next) {
     fetchGooglePub(req.query, pub.name, pub.address.loc,
       function(err, data) {
         if (err) { return next(err); }
-        pub = pub.toObject();
-        pub.propositions = data;
-        res.send(pub);
+        updatingPub(pub, data, function(err) {
+          if (err) { logger.error('google processing pub', err); }
+          res.send(pub);
+        });
       }
     );
   });
