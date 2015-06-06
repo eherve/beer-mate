@@ -2,19 +2,22 @@
 
 var util = require('util');
 var express = require('express');
+var ObjectId = require('mongoose').Types.ObjectId;
 var router = express.Router();
 var https = require('https');
+var NotFoundError = require('../../errors/notFoundError');
 var logger = require('../../logger').get('Route');
 var Auth = require('../../tools/auth');
 var PubModel = require('../../models/pub');
 
 var GOOGLE_PLACE_KEY = require('../../config/application.json')
   .google.placeKey;
+var PLACE_ID_PARAM = 'place_id';
 
 router.get('/unprocessed', Auth.adminConnected, function(req, res, next) {
   var filters = { $or: [ { 'google.processed': { $exists: false } },
     { 'google.processed': false } ] };
-  var fields = 'name address google.processed';
+  var fields = 'name address google';
   PubModel.find(filters, fields, function(err, pubs) {
     if (err) { return next(err); }
     res.send(pubs);
@@ -23,7 +26,7 @@ router.get('/unprocessed', Auth.adminConnected, function(req, res, next) {
 
 router.get('/mismatch', Auth.adminConnected, function(req, res, next) {
   var filters = { 'google.processed': true, 'google.placeId': null };
-  var fields = 'name address google.processed';
+  var fields = 'name address google';
   PubModel.find(filters, fields, function(err, pubs) {
     if (err) { return next(err); }
     res.send(pubs);
@@ -31,21 +34,21 @@ router.get('/mismatch', Auth.adminConnected, function(req, res, next) {
 });
 
 function buildPath(query, name, loc) {
-  return '/maps/api/place/nearbysearch/json'
+  var path = '/maps/api/place/nearbysearch/json'
     .concat('?types=').concat('bar')
     .concat('&location=').concat(loc[1]).concat(',').concat(loc[0])
-    .concat('&radius=').concat(query.radius || 50)
-    .concat('&name=').concat(encodeURIComponent(name))
-    .concat('&key=').concat(GOOGLE_PLACE_KEY);
+    .concat('&radius=').concat(query.radius || 50);
+  if (name) {
+    path.concat('&name=').concat(encodeURIComponent(name));
+  }
+  path.concat('&key=').concat(GOOGLE_PLACE_KEY);
+  return path;
 }
 
-function fetchPub(query, name, loc, cb) {
+function fetchGooglePub(query, name, loc, cb) {
   var options = {
-    hostname: 'maps.googleapis.com',
-    port: 443,
-    path: buildPath(query, name, loc),
-    method: 'GET',
-    rejectUnauthorized: false
+    hostname: 'maps.googleapis.com', port: 443, method: 'GET',
+    path: buildPath(query, name, loc), rejectUnauthorized: false
   };
   logger.debug(util.format('google fetch options', options));
   var req = https.request(options, function(res) {
@@ -54,9 +57,8 @@ function fetchPub(query, name, loc, cb) {
     res.on('data', function(data) { ggData += data; });
     res.on('end', function() {
       if (res.statusCode === 200) {
-        try {
-          ggData = JSON.parse(ggData);
-        } catch (err) { return cb(err); }
+        try { ggData = JSON.parse(ggData); }
+        catch (err) { return cb(err); }
         cb(null, ggData);
       } else {
         logger.error('google fetch', ggData);
@@ -70,24 +72,54 @@ function fetchPub(query, name, loc, cb) {
   req.on('error', cb);
 }
 
+function updatingPub(pub, data, cb) {
+  pub.google.processed = true;
+  pub.google.processTime = Date.now;
+  if (data && data.results && data.results.length === 1) {
+    pub.google.placeId = data.results[0][PLACE_ID_PARAM];
+  }
+  pub.save(cb);
+}
+
 router.get('/process', Auth.adminConnected, function(req, res, next) {
   var filters = { $or: [ { 'google.processed': { $exists: false } },
     { 'google.processed': false } ] };
   var fields = 'name address google';
-  PubModel.find(filters, fields).limit(req.query.limit || 20)
-    .exec(function(err, pubs) {
-      if (err) { return next(err); }
-      (function run(index) {
-        if (index >= pubs.length) { return res.send(pubs); }
-        fetchPub(req.query, pubs[index].name, pubs[index].address.loc,
-          function(err, data) {
-            if (err) { return next(err); }
-            pubs[index] = pubs[index].toObject();
-            pubs[index].propositions = data;
+  var query = PubModel.find(filters, fields);
+  if (req.query.limit) { query.limit(req.query.limit); }
+  query.exec(function(err, pubs) {
+    if (err) { return next(err); }
+    (function run(index) {
+      if (index >= pubs.length) { return res.send(pubs); }
+      var pub = pubs[index];
+      fetchGooglePub(req.query, pub.name, pub.address.loc,
+        function(err, data) {
+          if (err) { return next(err); }
+          updatingPub(pub, data, function(err) {
+            if (err) { logger.error('google processing pub', err); }
             run(++index);
-          }
-        );
-      })(0);
+          });
+        }
+      );
+    })(0);
+  });
+});
+
+router.get('/process/:pubId', Auth.adminConnected, function(req, res, next) {
+  var id = req.params.pubId;
+  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+  var fields = 'name address google';
+  PubModel.findById(id, fields, function(err, pub) {
+    if (err) { return next(err); }
+    if (!pub) { return next(new NotFoundError()); }
+    fetchGooglePub(req.query, pub.name, pub.address.loc,
+      function(err, data) {
+        if (err) { return next(err); }
+        pub = pub.toObject();
+        pub.propositions = data;
+        res.send(pub);
+      }
+    );
   });
 });
 
