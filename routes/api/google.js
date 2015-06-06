@@ -59,6 +59,7 @@ function fetchGooglePub(query, name, loc, cb) {
       if (res.statusCode === 200) {
         try { ggData = JSON.parse(ggData); }
         catch (err) { return cb(err); }
+        logger.debug('google fetch', ggData);
         cb(null, ggData);
       } else {
         logger.error('google fetch', ggData);
