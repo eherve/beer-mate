@@ -38,9 +38,9 @@ router.get('/mismatch', Auth.adminConnected, function(req, res, next) {
 
 function buildKeyword(name, address) {
   return name
-    .append(' ').append(address.street)
-    .append(' ').append(address.city)
-    .append(' ').append(address.country);
+    .concat(' ').concat(address.street)
+    .concat(' ').concat(address.city)
+    .concat(' ').concat(address.country);
 }
 
 function buildPath(query, name, address, loose) {
