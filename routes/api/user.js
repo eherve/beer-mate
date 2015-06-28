@@ -12,6 +12,7 @@ var uuid = require('node-uuid');
 var Resource = require('../../resource');
 var Email = require('../../email');
 var emailLogger = require('../../logger').get('Email');
+var front = require('../../config/application.json').front;
 
 router.get('/', Auth.adminConnected, function(req, res, next) {
   UserModel.find(function(err, users) {
@@ -60,12 +61,11 @@ router.put('/:userId', Auth.userConnected, function(req, res, next) {
 });
 
 /* Reset password */
-
 function sendResetPassEmail(req, user, token) {
-  Resource.getEmailFile('resetPasswordEmail', req.locale, function(err, file) {
+  Resource.getEmailFile('resetPasswordEmail', user.locale || req.locale, function(err, file) {
     if (err) { return; }
     Email.send(user.email, req.translate('email.reset-password'), file,
-    { host: req.get('host'), user: user, token: token }, function(err) {
+    { host: front.url, user: user, token: token }, function(err) {
       if (err) {
         return emailLogger.error('Send reset password email failed', err);
       }
@@ -74,64 +74,79 @@ function sendResetPassEmail(req, user, token) {
   });
 }
 
+// Reset password by UID (user connected)
+router.get('/:userId/password-reset', Auth.userConnected, function(req, res, next) {
+    var id = req.params.userId;
+    if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+
+    UserModel.findById(id, function(err, user) {
+	if (err) { return next(err); }
+	if (!user) { return next(new NotFoundError()); }
+
+	var dateLim = new Date();
+	dateLim.setDate(dateLim.getDate() + 1);
+	
+	if (user.passwordreset && user.passwordreset.date && user.passwordreset.date < dateLim) {
+	    return next(new ForbiddenError());
+	}
+
+	// user.passwordreset = {
+	//     token: uuid.v4(),
+	//     date: new Date()
+	// }
+	user.save(function(err) {
+	    if (err) { return next(err); }
+	    sendResetPassEmail(req, user, user.passwordreset.token);
+	    res.end();
+	});
+	
+    });
+});
+
+// Reset password by email
+router.post('/password-reset', function(req, res, next) {
+    var email = req.body.email;
+    if (!email || email.trim() === '') { return next(new BadRequestError()); }
+    var field = '+password +salt';
+    UserModel.findOne({ email: email }, field, function(err, user) {
+	if (err) { return next(err); }
+	if (!user) { return next(new NotFoundError()); }
+	var dateLim = new Date();
+	dateLim.setDate(dateLim.getDate() + 1);
+	if (user.passwordreset.date && user.passwordreset.date < dateLim) {
+            return next(new ForbiddenError());
+	}
+	user.passwordreset = {
+	    token: uuid.v4(),
+	    date: new Date()
+	};
+	user.save(function(err) {
+	    if (err) { return next(err); }
+	    sendResetPassEmail(req, user, user.passwordreset.token);
+	    res.end();
+	});
+    });
+});
+
+// reset password, check user email and token
 router.post('/reset-password', function(req, res, next) {
-  var email = req.body.email;
-  if (!email || email.trim() === '') { return next(new BadRequestError()); }
-  var field = '+password +salt';
-  UserModel.findOne({ email: email }, field, function(err, user) {
-    if (err) { return next(err); }
-    if (!user) { return next(new NotFoundError()); }
-    var dateLim = new Date();
-    dateLim.setDate(dateLim.getDate() - 1);
-    if (user.passwordreset.date && user.passwordreset.date > dateLim) {
-        return next(new ForbiddenError());
-      }
-    user.passwordreset = { token: uuid.v4(), date: new Date() };
-    user.save(function(err) {
-      if (err) { return next(err); }
-      sendResetPassEmail(req, user, user.passwordreset.token);
-      res.end();
+    var token = req.body.token;
+    var email = req.body.email;
+
+    var password = req.body.password;
+    if (!password || password.trim() === '') { return new BadRequestError(); }
+
+    UserModel.findOne({email: email, 'passwordreset.token': token}, function(err, user) {
+	if (err) { return next(err); }
+	if (!user) { return next(new NotFoundError()); }
+
+	user.password = password;
+	user.passwordreset = null;
+	user.save(function(err) {
+	    if (err) { return next(err); } 
+	    res.end();
+	});
     });
-  });
-});
-
-var passwordreset = function(req, res, next) {
-  var id = req.params.userId;
-  if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-  var uuid = req.query.uuid;
-  UserModel.findById(id, function(err, user) {
-    if (err) { return next(err); }
-    if (!user) { return next(new NotFoundError()); }
-
-    var dateLim = user.passwordreset.date;
-    dateLim.setDate(dateLim.getDate() + 1);
-    if (!user.passwordreset || !user.passwordreset.date ||
-        dateLim < new Date() || user.passwordreset.token !== uuid) {
-      return next(new ForbiddenError());
-    }
-    next(null, user);
-  });
-};
-
-router.get('/:userId/password-reset', function(req, res, next) {
-  passwordreset(req, res, function(err) {
-    if (err) { return next(err); }
-    res.end();
-  });
-});
-
-router.post('/:userId/password-reset', function(req, res, next) {
-  var newPass = req.body.password;
-  if (!newPass || newPass.trim() === '') { return new BadRequestError(); }
-  passwordreset(req, res, function(err, user) {
-    if (err) { return next(err); }
-    user.password = newPass;
-    user.passwordreset.token = '';
-    user.save(function(err) {
-      if (err) { return next(err); }
-      res.end();
-    });
-  });
 });
 
 module.exports = router;
