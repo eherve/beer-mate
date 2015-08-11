@@ -1,13 +1,14 @@
 {
-		"port": 4242,
-		"session": {
-				"host": "sd-43627.dedibox.fr",
-				"port": 6379,
-				"options": {
-						"auth_pass": "redisAdmin"
-				}
-		},
+    "port": 4242,
+    "session": {
+	"host": "sd-43627.dedibox.fr",
+	"port": 6379,
+	"options": {
+	    "auth_pass": "redisAdmin"
+	},
+	"prefix": ""
+    },
     "google": {
-      "placeKey": "AIzaSyAzZYZkULE6-yPXUwvbZ1vwSTyLCnhBmmw"
+	"placeKey": "AIzaSyAzZYZkULE6-yPXUwvbZ1vwSTyLCnhBmmw"
     }
 }
