@@ -4,11 +4,14 @@ var util = require('util');
 var logger = require('./logger').get('Redis');
 var redis = require('redis');
 var redisCli = null;
+var prefix = "";
 
 module.exports.connect = function(config, cb) {
   var host = config.host;
   var port = config.port;
   var opts = config.options;
+  if (config.prefix && config.prefix.trim() != '')
+    prefix = config.prefix+'-';
   redisCli = redis.createClient(port, host, opts);
   redisCli.once('error', cb);
   redisCli.once('ready', function() {
@@ -26,7 +29,7 @@ var register = module.exports.register = function(token, userId, cb) {
   logger.debug('register userId %s for token %s', userId, token);
   if (redisCli !== null && redisCli.connected) {
     if (token.trim() !== '' ) { // TODO remove, it will never happend
-      redisCli.set(token, JSON.stringify({
+      redisCli.set(prefix+token, JSON.stringify({
         id: userId, lastAccess: Date.now() }), cb);
     } else {
       cb(new Error('didn\'t receive a token'));
@@ -39,7 +42,7 @@ var register = module.exports.register = function(token, userId, cb) {
 module.exports.unregister = function(token, cb) {
   logger.debug('unregister token %s', token);
   if (redisCli !== null && redisCli.connected) {
-    redisCli.del(token, cb);
+    redisCli.del(prefix+token, cb);
   } else {
     cb(new Error('Redis server not connected'));
   }
@@ -47,7 +50,7 @@ module.exports.unregister = function(token, cb) {
 
 module.exports.get = function(token, cb) {
   if (redisCli !== null && redisCli.connected) {
-    redisCli.get(token, function(err, data) {
+    redisCli.get(prefix+token, function(err, data) {
       if (err) { return cb(err); }
       if (data === null) { return cb(null, null); }
       try {
