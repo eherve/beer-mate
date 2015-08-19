@@ -2,6 +2,7 @@
 
 var Schema = require('mongoose').Schema;
 var validate = require('mongoose-validator');
+var validator = require('../tools/validator').mongoose;
 var crypto = require('crypto');
 var SALT_RANDOM_SIZE = 16;
 var HASH_ITERATION = 420;
@@ -13,15 +14,6 @@ var emailValidator = [
   validate({
     validator: 'isEmail',
     message: 'validator.email'
-  })
-];
-
-var localeValidator = [
-  validate({
-    validator: 'matches',
-    arguments: [ /^[A-Za-z-]*$/ ],
-    passIfEmpty: true,
-    message: 'validator.locale'
   })
 ];
 
@@ -44,7 +36,7 @@ var schema = new Schema({
     token: { type: String },
     expires: { type: Date }
   },
-  locale: { type: String, validate: localeValidator },
+  locale: { type: String, validate: validator.localeValidator },
   activated: { type: Boolean, default: true }
 });
 
