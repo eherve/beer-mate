@@ -28,9 +28,7 @@ router.get('/:webContentId', function(req, res, next) {
 		if (req.query.version === 'last') {
 			aggregate.sort({ 'versions._id': -1 });
 			aggregate.limit(1);
-		} else {
-			aggregate.match({ 'versions._id': req.query.version });
-		}
+		} else { aggregate.match({ 'versions._id': req.query.version }); }
 		aggregate.group({ _id: '$_id', versions: { $first: '$versions' } });
 	}
 	if (req.query.locale) {

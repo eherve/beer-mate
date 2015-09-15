@@ -4,9 +4,9 @@ var path = require('path');
 var fs = require('fs');
 var CONTENT_FOLDER = path.join(__dirname, 'content');
 var DOC_TOS_FR_FILE = path.join(CONTENT_FOLDER,
-	'mobile-privacy-policy-geolocated-apps-august-15-2015.fr.html');
+	'TOS.fr.html');
 var DOC_TOS_EN_FILE = path.join(CONTENT_FOLDER,
-	'mobile-privacy-policy-geolocated-apps-august-15-2015.en.html');
+	'TOS.en.html');
 var DOC_P_FR_FILE = path.join(CONTENT_FOLDER,
 	'mobile-privacy-policy-geolocated-apps-august-15-2015.fr.html');
 var DOC_P_EN_FILE = path.join(CONTENT_FOLDER,
