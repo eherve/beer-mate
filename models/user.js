@@ -33,7 +33,7 @@ var schema = new Schema({
   administrator: { type: Boolean, default: false },
   validated: { type: Boolean, default: false },
   validation: { token: { type: String }, expires: { type: Date } },
-	terms: { type: Schema.ObjectId, default: null },
+	terms: { type: String, default: null },
   locale: { type: String, validate: validator.localeValidator },
   activated: { type: Boolean, default: true }
 });
