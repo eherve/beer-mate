@@ -67,6 +67,18 @@ function addFileOutput(logger, settings) {
   }
 }
 
+function isDebug() {
+	var levels = module.exports.getLevels(this.label);
+	var transports = Object.keys(levels);
+	for (var index = 0; index < transports.length; ++index) {
+		var level = levels[transports[index]];
+		if (level === 'debug' || level === 'all') {
+			return true;
+		}
+	}
+	return false;
+}
+
 module.exports.get = function(name) {
   if (!name) { name = 'default'; }
   if (loggers[name]) { return loggers[name]; }
@@ -99,6 +111,7 @@ module.exports.get = function(name) {
     oldLogger.apply(this, arguments);
   };
   //  END  FIXME
+	logger.isDebug = isDebug;
   return logger;
 };
 
