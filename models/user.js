@@ -32,10 +32,8 @@ var schema = new Schema({
   salt: { type: String, select: false },
   administrator: { type: Boolean, default: false },
   validated: { type: Boolean, default: false },
-  validation: {
-    token: { type: String },
-    expires: { type: Date }
-  },
+  validation: { token: { type: String }, expires: { type: Date } },
+	terms: { type: Schema.ObjectId, default: null },
   locale: { type: String, validate: validator.localeValidator },
   activated: { type: Boolean, default: true }
 });
