@@ -14,6 +14,9 @@ var Email = require('../../email');
 var emailLogger = require('../../logger').get('Email');
 var front = require('../../config/application.json').front;
 
+/*
+ * Get all users
+ */
 router.get('/', Auth.adminConnected, function(req, res, next) {
 	UserModel.find(function(err, users) {
 		if (err) { return next(err); }
@@ -21,6 +24,9 @@ router.get('/', Auth.adminConnected, function(req, res, next) {
 	});
 });
 
+/*
+ * Create new user
+ */
 router.post('/', Auth.adminConnected, function(req, res, next) {
 	var user = new UserModel();
 	user.merge(req.body, { fields: UserModel.ALLOWED_CREATE_FIELD });
@@ -30,6 +36,9 @@ router.post('/', Auth.adminConnected, function(req, res, next) {
 	});
 });
 
+/*
+ * Get user
+ */
 router.get('/:userId', Auth.userConnected, function(req, res, next) {
 	var id = req.params.userId;
 	if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
@@ -43,6 +52,9 @@ router.get('/:userId', Auth.userConnected, function(req, res, next) {
 	});
 });
 
+/*
+ * Update user
+ */
 router.put('/:userId', Auth.userConnected, function(req, res, next) {
 	var id = req.params.userId;
 	if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
@@ -60,7 +72,29 @@ router.put('/:userId', Auth.userConnected, function(req, res, next) {
 	});
 });
 
-/* Reset password */
+/*
+ * Validate term of services
+ */
+router.put('/:userId/tos/:version', Auth.userConnected, function(req, res, next) {
+	var id = req.params.userId;
+	if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+	if (!Auth.isAdmin(req) && req.redisData.id !== id) {
+		return next(new ForbiddenError());
+	}
+	UserModel.findById(id, function(err, user) {
+		if (err) { return next(err); }
+		if (!user) { return next(new NotFoundError()); }
+		user.terms = req.params.version;
+		user.save(function(err) {
+			if (err) { return next(err); }
+			res.end();
+		});
+	});
+});
+
+/*
+ * Reset password
+ */
 function sendResetPassEmail(req, user, token) {
 	Resource.getEmailFile('resetPasswordEmail', user.locale || req.locale,
 		function(err, file) {
@@ -75,7 +109,9 @@ function sendResetPassEmail(req, user, token) {
 		});
 }
 
-// Reset password by UID (user connected)
+/*
+ * Reset password by UID (user connected)
+ */
 router.get('/:userId/password-reset', Auth.userConnected,
 	function(req, res, next) {
 		var id = req.params.userId;
@@ -98,7 +134,9 @@ router.get('/:userId/password-reset', Auth.userConnected,
 		});
 	});
 
-// Reset password by email
+/*
+ * Reset password by email
+ */
 router.post('/password-reset', function(req, res, next) {
 	var email = req.body.email;
 	if (!email || email.trim() === '') { return next(new BadRequestError()); }
@@ -123,7 +161,9 @@ router.post('/password-reset', function(req, res, next) {
 	});
 });
 
-// reset password, check user email and token
+/*
+ * Reset password, check user email and token
+ */
 router.post('/reset-password', function(req, res, next) {
 	var token = req.body.token;
 	var email = req.body.email;
