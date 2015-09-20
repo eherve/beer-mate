@@ -1,5 +1,5 @@
 var fs = require('fs');
-var prompt = require('prompt-sync').prompt;
+var prompt = require('readline-sync')//require('prompt-sync').prompt;
 
 var folder = './config';
 var sampleExt = '.sample';
@@ -19,8 +19,9 @@ function merge(from, to, key, concat) {
 	    }
 	} else {
 	    if (to[key] == undefined) {
-		process.stdout.write('item "'+concat+'" need a value: ('+from[key]+'): \n')
-		to[key] = prompt()
+		//process.stdout.write('item "'+concat+'" need a value: ('+from[key]+'): \n')
+		//to[key] = prompt()
+		to[key] = prompt.question('item "'+concat+'" need a value: ('+from[key]+'): ');
 		if (to[key] == '') {
 		    to[key] = from[key]
 		}
@@ -40,6 +41,7 @@ configFiles.forEach(function(file) {
 	}
 
 	merge(sample, config);
+	console.log(config);
 	fs.writeFileSync(filename, JSON.stringify(config, null, 4));
     }
 });

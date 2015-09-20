@@ -1,5 +1,6 @@
 module.exports = function (shipit) {
     require('shipit-deploy')(shipit);
+    require('shipit-npm')(shipit);
     
     shipit.initConfig({
 	default: {
@@ -15,9 +16,11 @@ module.exports = function (shipit) {
 	    deployTo: '~/prod'
 	}
     });
-    
+
     shipit.on('updated', function() {
-	shipit.remote('cd ' + shipit.releasePath + ' && npm install && node ./tools-config.js');
+	shipit.remote('cd ' + shipit.config.deployTo + ' && mkdir -p common/logs/ common/node_modules');
+	shipit.remote('cd ' + shipit.releasePath + ' && ln -s ' + shipit.config.deployTo + '/common/node_modules');
+	shipit.remote('cd ' + shipit.releasePath + ' && node tools-config.js');
     });
     
 };
