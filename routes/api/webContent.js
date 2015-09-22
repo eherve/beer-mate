@@ -5,6 +5,7 @@ var express = require('express');
 var router = express.Router();
 var logger = require('../../logger').get('Web Content Route');
 var NotFoundError = require('../../errors/notFoundError');
+var BadRequestError = require('../../errors/badRequestError');
 var WebContentModel = require('../../models/webContent');
 var Auth = require('../../tools/auth');
 
@@ -73,12 +74,42 @@ router.put('/:id/:version/:locale', Auth.adminConnected,
 		}
 		WebContentModel.findById(req.params.id, function(err, webContent) {
 			if (err) { return next(err); }
+			if (!webContent) { return next(new NotFoundError()); }
 			var version = webContent.versions.id(req.params.version);
 			if (!version) { return next(new NotFoundError()); }
 			var locale = version.locales.id(req.params.locale);
 			if (!locale) { return next(new NotFoundError()); }
 			locale.data = req.body;
+			webContent.save(function(err) {
+				if (err) { return next(err); }
+				res.end();
+			});
+		});
+	}
+);
+
+/*
+ * Create one web content version
+ */
+router.post('/:id', Auth.adminConnected, function(req, res, next) {
+	if (logger.isDebug()) {
+		logger.debug(util.format(
+			'create web content %s version %s',
+			req.params.id, req.body.version
+		));
+	}
+	WebContentModel.findById(req.params.id, function(err, webContent) {
+		if (err) { return next(err); }
+		if (!webContent) { return next(new NotFoundError()); }
+		var version = webContent.versions.id(req.body.version);
+		if (version !== null) { return next(new BadRequestError(
+			'error.web_content_version_exists')); }
+		webContent.versions.push(version);
+		webContent.save(function(err) {
+			if (err) { return next(err); }
+			res.end();
 		});
 	});
+});
 
 module.exports = router;
