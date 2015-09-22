@@ -10,6 +10,6 @@ mongooseValidator.localeValidator = [
 		validator: 'matches',
 		arguments: [ /^[A-Za-z-]*$/ ],
 		passIfEmpty: true,
-		message: 'validator.locale'
+		message: 'error.wrong_locale'
 	})
 ];

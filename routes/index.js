@@ -14,7 +14,7 @@ function notFound(req, res, next) {
 function validationError(err, req, res, next) {
 	if (err.name === 'ValidationError') {
 		err.status = 400;
-		err.description = 'error.validation.failed';
+		err.description = 'error.validation_failed';
 	}
 	next(err);
 }
@@ -25,7 +25,7 @@ function error(err, req, res, next) { // jshint ignore:line
 	else { logger.debug(err.message, err); }
 	var data = err;
 	if (process.env.NODE_ENV !== 'development') {
-		data = {description: err.description };
+		data = { description: err.description };
 		if (err.errors) { data.errors = err.errors; }
 	}
   res.status(status);
