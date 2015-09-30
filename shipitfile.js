@@ -5,7 +5,7 @@ module.exports = function (shipit) {
     shipit.initConfig({
 	default: {
 	    servers: 'beermate@beermate.io',
-	    repositoryUrl: 'https://github.com/eherve/beer-mate.git'
+	    repositoryUrl: 'git@github.com:eherve/beer-mate.git'
 	},
 	staging: {
 	    workspace: '/tmp/repos-staging',
@@ -18,9 +18,14 @@ module.exports = function (shipit) {
     });
 
     shipit.on('updated', function() {
-	shipit.remote('cd ' + shipit.config.deployTo + ' && mkdir -p common/logs/ common/node_modules');
-	shipit.remote('cd ' + shipit.releasePath + ' && ln -s ' + shipit.config.deployTo + '/common/node_modules');
-	shipit.remote('cd ' + shipit.releasePath + ' && node tools-config.js');
+	shipit.remote('cd ' + shipit.config.deployTo + ' && mkdir -p common/logs/ common/node_modules common/config');
+	shipit.remote('cd ' + shipit.releasePath + ' && rm -rf node_modules  && ln -s ' + shipit.config.deployTo + '/common/node_modules');
+	shipit.remote('cd ' + shipit.releasePath + '/config && ln -s ' + shipit.config.deployTo + '/common/config/*.json -t .');
     });
+
+    shipit.on('published', function() {
+	shipit.remote('sudo /usr/bin/supervisorctl restart beermate-'+shipit.environment);
+    });
+    
     
 };
