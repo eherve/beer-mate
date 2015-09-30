@@ -88,7 +88,7 @@ router.post('/facebook-login', function(req, res, next) {
           if (err) { return next(err); }
           if (user) {
             return next(
-              new UnprocessableEntityError('error.user.email.unique'));
+              new UnprocessableEntityError('error.user_email_unique'));
           }
           buildUserFromFbData(data).save(function(err, user) {
             if (err) { return next(err); }
@@ -125,13 +125,12 @@ function sendConfirmationEmail(req, user, token, expires) {
 router.post('/join', function(req, res, next) {
   var email = req.body.email;
   var password = req.body.password;
-  if (!email || !password) { return next(new BadRequestError()); }
-  UserModel.findOne({ email: email }, '_id', function(err, user) {
-    if (err) { return next(err); }
-    if (user) {
-      return next(
-        new UnprocessableEntityError('error.user.email.unique'));
-    }
+  if (!email || !password) { return next(new BadRequestError(
+		'error.missing_email_or_password')); }
+	UserModel.findOne({ email: email }, '_id', function(err, user) {
+		if (err) { return next(err); }
+    if (user) { return next(new UnprocessableEntityError(
+			'error.user_email_unique')); }
     var token = uuid.v4();
     var expires = new Date(Date.now() + CONFIRM_EXPIRATION_DELAY);
     (new UserModel({ email: email, password: password,

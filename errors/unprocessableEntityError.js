@@ -3,7 +3,7 @@
 var util = require('util');
 
 var UnprocessableEntityError = module.exports =
-function BadRequestError(description) {
+function UnprocessableEntityError(description) {
   Error.call(this);
   this.message = 'Unprocessable Entity';
   this.stack = (new Error()).stack;
