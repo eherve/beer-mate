@@ -2,14 +2,7 @@
 
 var Schema = require('mongoose').Schema;
 var validate = require('mongoose-validator');
-
-var nameValidator = [
-  validate({
-    validator: 'isLength',
-    arguments: [2, 50],
-    message: 'validator.name.size'
-  })
-];
+var validator = require('../tools/validator');
 
 var hourValidator = [
   validate({
@@ -20,26 +13,9 @@ var hourValidator = [
   })
 ];
 
-var webSiteValidator = [
-validate({
-    validator: 'isURL',
-    arguments: [ { 'allow_underscores': true } ],
-    passIfEmpty: true,
-    message: 'validator.web-site'
-  })
-];
-
-var noteValidator = [
-  validate({
-    validator: 'isInt',
-    passIfEmpty: true,
-    message: 'validator.note.type'
-  })
-];
-
 var ratingSchema = new Schema({
-  note: { type: Number, validate: noteValidator, required: true,
-    min: 0, max: 5 },
+  note: { type: Number, validate: validator.mongoose.noteValidator,
+		required: true, min: 0, max: 5 },
   createdAt: { type: Date, default: Date.now, required: true },
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true }
 });
@@ -61,8 +37,34 @@ var daySchema = {
   priceHH: { type: Number }
 };
 
+var openPeriodSchema = new Schema({
+	open: {
+		day: { type: Number, validate: validator.mongoose.dayNumValidator },
+		hours: { type: Number, validate: validator.mongoose.hourValidator },
+		minutes: { type: Number, validate: validator.mongoose.minuteValidator }
+	},
+	close: {
+		day: { type: Number, validate: validator.mongoose.dayNumValidator },
+		hours: { type: Number, validate: validator.mongoose.hourValidator },
+		minutes: { type: Number, validate: validator.mongoose.minuteValidator }
+	},
+	price: { type: Number },
+	openHH: {
+		day: { type: Number, validate: validator.mongoose.dayNumValidator },
+		hours: { type: Number, validate: validator.mongoose.hourValidator },
+		minutes: { type: Number, validate: validator.mongoose.minuteValidator }
+	},
+	closeHH: {
+		day: { type: Number, validate: validator.mongoose.dayNumValidator },
+		hours: { type: Number, validate: validator.mongoose.hourValidator },
+		minutes: { type: Number, validate: validator.mongoose.minuteValidator }
+	},
+	priceHH: { type: Number }
+});
+
 var schema = new Schema({
-  name: { type: String, required: true, validate: nameValidator },
+  name: { type: String, required: true,
+		validate: validator.mongoose.pubNameValidator },
   phone: { type: String },
   address: {
     country: { type: String, mergeable: false },
@@ -72,7 +74,7 @@ var schema = new Schema({
     loc: { type: [ Number ], index: '2dsphere', required: true,
       mergeable: false }
   },
-  webSite: { type: String, validate: webSiteValidator },
+  webSite: { type: String, validate: validator.mongoose.urlValidator },
   days: {
     default: daySchema,
     monday: daySchema,
@@ -83,6 +85,7 @@ var schema = new Schema({
     saturday: daySchema,
     sunday: daySchema
   },
+	openPeriods: [ openPeriodSchema ],
   currency: { type: String },
   ratings: [ ratingSchema ],
   rating: { type: Number, min: 0, max: 5, mergeable: false },
