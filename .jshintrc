@@ -25,5 +25,5 @@
   "nonbsp": true,
   "nonew": true,
   "notypeof": true,
-  "maxcomplexity": 10
+  "maxcomplexity": 13
 }
