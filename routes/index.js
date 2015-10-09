@@ -1,9 +1,11 @@
 /// <reference path="../typings/node/node.d.ts"/>
 'use strict';
 
-var logger = require('../logger').get('Route Error');
-var api = require('./api');
-var admin = require('./admin');
+var util = require('util');
+var fs = require('fs');
+var path = require('path');
+
+var logger = require('../logger').get('Route');
 
 function notFound(req, res, next) {
   var err = new Error('Not Found');
@@ -33,8 +35,29 @@ function error(err, req, res, next) { // jshint ignore:line
 }
 
 module.exports = function(app) {
-  api(app);
-  admin(app);
+	(function walk(base, dir) {
+		var list = fs.readdirSync(dir);
+		list.forEach(function(file) {
+			var filePath = path.join(dir, '/', file);
+			var stat = fs.statSync(filePath);
+			if (stat && stat.isDirectory()) {
+				walk(path.join(base, '/', file), filePath);
+			} else {
+				var route = require(filePath);
+				if (route.name === 'router') {
+					var args = [];
+					if (route.path) { args.push(path.join(base, route.path)); }
+					if (route.middlewares) { args = args.concat(route.middlewares); }
+					args.push(route);
+					logger.info(util.format(
+						'load router %s', path.join(base, '/', file)));
+					logger.debug(args);
+					app.use.apply(app, args);
+				}
+			}
+		});
+	})('', __dirname);
+
   app.use(notFound);
 	app.use(validationError);
   app.use(error);

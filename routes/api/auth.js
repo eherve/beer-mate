@@ -20,6 +20,8 @@ var CONFIRM_EXPIRATION_DELAY = 24 * 60 * 60 * 1000;
 var FB_FIRSTNAME_KEY = 'first_name';
 var FB_LASTNAME_KEY = 'last_name';
 
+router.path = '/auth';
+
 function buildUserFromFbData(data) {
   return new UserModel({ email: data.email, facebookId: data.id,
     firstname: data[FB_FIRSTNAME_KEY], lastname: data[FB_LASTNAME_KEY],

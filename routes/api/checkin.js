@@ -13,6 +13,8 @@ var Auth = require('../../tools/auth');
 var USER_TYPE = 'user';
 var PUB_TYPE = 'pub';
 
+router.path = '/checkin';
+
 function getType(req) {
   return req.query.userId ? USER_TYPE : PUB_TYPE;
 }

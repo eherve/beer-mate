@@ -2,11 +2,17 @@
 
 var express = require('express');
 var router = express.Router();
+var Auth = require('../../tools/auth');
 var NotFoundError = require('../../errors/notFoundError');
 var BadRequestError = require('../../errors/badRequestError');
 var ForbiddenError = require('../../errors/forbiddenError');
 var ObjectId = require('mongoose').Types.ObjectId;
 var UserModel = require('../../models/user');
+
+router.path = '/user';
+router.middlewares = [
+	Auth.userConnected
+];
 
 router.get('/', function(req, res, next) {
   var id = req.redisData.id;

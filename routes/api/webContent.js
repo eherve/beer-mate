@@ -9,6 +9,8 @@ var BadRequestError = require('../../errors/badRequestError');
 var WebContentModel = require('../../models/webContent');
 var Auth = require('../../tools/auth');
 
+router.path = '/web-content';
+
 /*
  * List all web contents
  */

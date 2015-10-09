@@ -14,6 +14,8 @@ var Email = require('../../email');
 var emailLogger = require('../../logger').get('Email');
 var front = require('../../config/application.json').front;
 
+router.path = '/users';
+
 /*
  * Get all users
  */

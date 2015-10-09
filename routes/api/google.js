@@ -14,6 +14,8 @@ var GOOGLE_PLACE_KEY = require('../../config/application.json')
   .google.placeKey;
 var PLACE_ID_PARAM = 'place_id';
 
+router.path = '/google';
+
 router.get('/unprocessed', Auth.adminConnected, function(req, res, next) {
   var filters = { $or: [ { 'google.processed': { $exists: false } },
     { 'google.processed': false } ] };
