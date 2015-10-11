@@ -78,7 +78,7 @@ function getFields(query) {
 
 router.get('/', function(req, res, next) {
   var filters = getFilters(req.query);
-  var fields = 'name address days currency updatedAt';
+  var fields = 'name address days openPeriods currency createdAt updatedAt';
   PubModel.find(filters, fields, function(err, pubs) {
     if (err) { return next(err); }
     res.send(pubs);
@@ -114,7 +114,6 @@ router.put('/:pubId', Auth.userConnected, function(req, res, next) {
     if (err) { return next(err); }
     if (!pub) { return next(new NotFoundError()); }
     pub.merge(req.body, { fields: PubModel.ALLOWED_UPDATE_FIELD });
-    pub.updatedAt = Date.now();
     pub.save(function(err) {
       if (err) { return next(err); }
       res.end();

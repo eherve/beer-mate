@@ -1,5 +1,8 @@
 'use strict';
 
+var util = require('util');
+var logger = require('logger-factory').get('Upgrade');
+
 function parseOpenClose(day, open, close) {
 	var dayOpen = open > '2359' ? day + 1 : day;
 	var dayClose = open > close ? (dayOpen === 6 ? 0 : dayOpen + 1) : dayOpen;
@@ -37,6 +40,7 @@ function addOpen(pub, day, df, data) {
 }
 
 function transform(pub) {
+	pub.openPeriods = [];
 	var df = pub.days.default;
 	Object.keys(pub.days).forEach(function(key) {
 		var day = key === 'monday' ? 0 : key === 'tuesday' ? 1
@@ -58,11 +62,11 @@ module.exports.upgrade = function(cb) {
 		var processedPub = 0;
     (function run(index) {
       if (index >= pubs.length) {
-				console.log(processedPub, 'processed pub');
+				logger.info(util.format('%s processed pub', processedPub));
 				return cb();
 			}
       var pub = pubs[index];
-			console.log('processing pub', pub.name, '...');
+			logger.info(util.format('processing pub %s...', pub.name));
 			transform(pub);
 			++processedPub;
       pub.save(function(err) {

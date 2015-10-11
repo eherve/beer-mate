@@ -104,8 +104,20 @@ var schema = new Schema({
   google: {
     placeId: { type: String, default: null },
     processed: { type: Boolean, default: false },
-    processTime: { type: Date }
+    processTime: { type: Date },
+		sync: { type: Date }
   }
+});
+
+/*
+ * Middlewares
+ */
+schema.pre('save', function(next) {
+	var pub = this;
+	if (!pub.isModified()) { return next(); }
+	if (pub.isNew) { pub.createdAt = Date.now(); }
+	pub.updatedAt = Date.now();
+	next();
 });
 
 /*
