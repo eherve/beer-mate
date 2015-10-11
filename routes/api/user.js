@@ -11,7 +11,7 @@ var UserModel = require('../../models/user');
 var uuid = require('node-uuid');
 var Resource = require('../../resource');
 var Email = require('../../email');
-var emailLogger = require('../../logger').get('Email');
+var emailLogger = require('logger-factory').get('Email');
 var front = require('../../config/application.json').front;
 
 router.path = '/users';
@@ -77,22 +77,23 @@ router.put('/:userId', Auth.userConnected, function(req, res, next) {
 /*
  * Validate term of services
  */
-router.put('/:userId/tos/:version', Auth.userConnected, function(req, res, next) {
-	var id = req.params.userId;
-	if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
-	if (!Auth.isAdmin(req) && req.redisData.id !== id) {
-		return next(new ForbiddenError());
-	}
-	UserModel.findById(id, function(err, user) {
-		if (err) { return next(err); }
-		if (!user) { return next(new NotFoundError()); }
-		user.terms = req.params.version;
-		user.save(function(err) {
+router.put('/:userId/tos/:version', Auth.userConnected,
+	function(req, res, next) {
+		var id = req.params.userId;
+		if (!ObjectId.isValid(id)) { return next(new NotFoundError()); }
+		if (!Auth.isAdmin(req) && req.redisData.id !== id) {
+			return next(new ForbiddenError());
+		}
+		UserModel.findById(id, function(err, user) {
 			if (err) { return next(err); }
-			res.end();
+			if (!user) { return next(new NotFoundError()); }
+			user.terms = req.params.version;
+			user.save(function(err) {
+				if (err) { return next(err); }
+				res.end();
+			});
 		});
 	});
-});
 
 /*
  * Reset password

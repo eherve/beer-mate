@@ -3,7 +3,7 @@
 var util = require('util');
 var express = require('express');
 var router = express.Router();
-var logger = require('../../logger').get('Web Content Route');
+var logger = require('logger-factory').get('Web Content Route');
 var NotFoundError = require('../../errors/notFoundError');
 var BadRequestError = require('../../errors/badRequestError');
 var WebContentModel = require('../../models/webContent');

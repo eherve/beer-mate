@@ -1,17 +1,18 @@
 'use strict';
 
 var util = require('util');
-var logger = require('./logger').get('Redis');
+var logger = require('logger-factory').get('Redis');
 var redis = require('redis');
 var redisCli = null;
-var prefix = "";
+var prefix = '';
 
 module.exports.connect = function(config, cb) {
   var host = config.host;
   var port = config.port;
   var opts = config.options;
-  if (config.prefix && config.prefix.trim() != '')
-    prefix = config.prefix+'-';
+  if (config.prefix && config.prefix.trim() !== '') {
+		prefix = config.prefix + '-';
+	}
   redisCli = redis.createClient(port, host, opts);
   redisCli.once('error', cb);
   redisCli.once('ready', function() {

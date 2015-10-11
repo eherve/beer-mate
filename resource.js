@@ -4,7 +4,7 @@ var util = require('util');
 var path = require('path');
 var fs = require('fs');
 var hogan = require('hogan');
-var logger = require('./logger').get('Resource');
+var logger = require('logger-factory').get('Resource');
 
 var FUNC_FILE_TMPL = 'get%sFile';
 var FUNC_FILE_SYNC_TMPL = 'get%sFileSync';

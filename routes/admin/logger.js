@@ -2,7 +2,7 @@
 
 var express = require('express');
 var router = express.Router();
-var logger = require('../../logger');
+var logger = require('logger-factory');
 var Auth = require('../../tools/auth');
 
 router.path = '/logger';

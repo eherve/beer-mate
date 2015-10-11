@@ -59,7 +59,7 @@ module.exports.upgrade = function(cb) {
     (function run(index) {
       if (index >= pubs.length) {
 				console.log(processedPub, 'processed pub');
-				return cb('done');
+				return cb();
 			}
       var pub = pubs[index];
 			console.log('processing pub', pub.name, '...');

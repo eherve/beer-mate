@@ -6,7 +6,7 @@ var ObjectId = require('mongoose').Types.ObjectId;
 var router = express.Router();
 var https = require('https');
 var NotFoundError = require('../../errors/notFoundError');
-var logger = require('../../logger').get('Route');
+var logger = require('logger-factory').get('Route');
 var Auth = require('../../tools/auth');
 var PubModel = require('../../models/pub');
 

@@ -143,11 +143,5 @@ schema.methods.comparePassword = function(password, cb) {
   );
 };
 
-/*
- * Register
- */
-
-module.exports.register = function(connection) {
-  module.exports = connection.model('User', schema);
-};
+module.exports = require('../database').db.model('User', schema);
 

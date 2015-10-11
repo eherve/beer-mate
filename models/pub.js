@@ -115,11 +115,5 @@ var schema = new Schema({
 schema.statics.ALLOWED_UPDATE_FIELD =
 '-ratings -comments -checkIn';
 
-/*
- * Register
- */
-
-module.exports.register = function(db) {
-  module.exports = db.model('Pub', schema);
-};
+module.exports = require('../database').db.model('Pub', schema);
 

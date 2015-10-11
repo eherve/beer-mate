@@ -1,7 +1,7 @@
 'use strict';
 
 var util = require('util');
-var logger = require('./logger').get('SoketIo');
+var logger = require('logger-factory').get('SoketIo');
 var socketIo = require('socket.io');
 var Auth = require('./tools/auth');
 var registered = [];

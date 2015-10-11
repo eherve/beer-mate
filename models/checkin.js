@@ -9,10 +9,4 @@ var schema = new Schema({
   pub: { type: Schema.Types.ObjectId, ref: 'Pub', required: true }
 });
 
-/*
- * Register
- */
-
-module.exports.register = function(db) {
-  module.exports = db.model('Checkin', schema);
-};
+module.exports = require('../database').db.model('Checkin', schema);

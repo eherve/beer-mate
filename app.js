@@ -4,7 +4,7 @@
 var express = require('express');
 var fs = require('fs');
 var path = require('path');
-var logger = require('./logger').expressLogger;
+var logger = require('logger-factory').expressLogger;
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 

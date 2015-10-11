@@ -4,7 +4,7 @@ var util = require('util');
 var fs = require('fs');
 var path = require('path');
 var hogan = require('hogan');
-var logger = require('./logger').get('I18n');
+var logger = require('logger-factory').get('I18n');
 
 var defaultLocale = 'en';
 var directory = path.join(__dirname, 'locales');

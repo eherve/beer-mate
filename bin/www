@@ -5,7 +5,7 @@
 var util = require('util');
 var path = require('path');
 
-var loggers = require('../logger');
+var loggers = require('logger-factory');
 loggers.configure(require('../config/logger.json'));
 var logger = loggers.get('Application');
 

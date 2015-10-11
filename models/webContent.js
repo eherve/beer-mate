@@ -22,9 +22,4 @@ var schema = new Schema({
 	versions: [ versionSchema ]
 });
 
-/*
- * Register
- */
-module.exports.register = function(db) {
-	module.exports = db.model('WebContent', schema);
-};
+module.exports = require('../database').db.model('WebContent', schema);

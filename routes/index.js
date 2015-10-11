@@ -5,7 +5,8 @@ var util = require('util');
 var fs = require('fs');
 var path = require('path');
 
-var logger = require('../logger').get('Route');
+var loggerRouter = require('logger-factory').get('Router');
+var logger = require('logger-factory').get('Route');
 
 function notFound(req, res, next) {
   var err = new Error('Not Found');
@@ -49,9 +50,9 @@ module.exports = function(app) {
 					if (route.path) { args.push(path.join(base, route.path)); }
 					if (route.middlewares) { args = args.concat(route.middlewares); }
 					args.push(route);
-					logger.info(util.format(
+					loggerRouter.info(util.format(
 						'load router %s', path.join(base, '/', file)));
-					logger.debug(args);
+					loggerRouter.debug(args);
 					app.use.apply(app, args);
 				}
 			}

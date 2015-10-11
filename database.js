@@ -6,7 +6,7 @@ var util = require('util');
 var mongoose = require('mongoose');
 var DataTable = require('mongoose-datatable');
 var Merge = require('mongoose-merge-plugin');
-var logger = require('./logger').get('Database');
+var logger = require('logger-factory').get('Database');
 
 mongoose.set('debug', function(collectionName, method, query) {
   logger.debug(util.format('run mongo collection: %s, method: %s, quey: %s',
@@ -65,15 +65,14 @@ function upgrade(cb) {
   });
 }
 
-function loadModels(db, cb) {
+function loadModels(cb) {
   fs.readdir(path.join(__dirname, 'models'), function(err, models) {
     if (err) { return cb(err); }
     for (var index = 0; index < models.length; ++index) {
       var modelName = models[index];
       if (!/^.*.js$/.test(modelName)) { continue; }
       logger.debug(util.format('Load model %s', modelName));
-      var model = require(path.join(__dirname, 'models', modelName));
-      model.register(db);
+      require(path.join(__dirname, 'models', modelName));
     }
     upgrade(cb);
   });
@@ -92,6 +91,7 @@ module.exports.connect = function(config, cb) {
       console.error(util.format('%s:%s/%s %s',
         this.host, this.port, this.name, err));
     });
-    loadModels(db, cb);
+		module.exports.db = db;
+    loadModels(cb);
   });
 };

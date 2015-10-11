@@ -38,6 +38,14 @@ module.exports = function(grunt) {
     port: '<%= config.port %>' || process.env.PORT || 9000,
     dport: '<%= config.dport %>' || 5858,
 
+		// Npm and Bower auto install
+		auto_install: { // jshint ignore:line
+			local: {},
+			options: {
+				bower: false
+			}
+		},
+
     // Watches files for changes and runs tasks based on the changed files
     watch: {
       all: {
@@ -117,16 +125,19 @@ module.exports = function(grunt) {
 
   // Tasks
   grunt.registerTask('default', [
+		'auto_install',
     'jshint:all',
     'watch:all'
   ]);
 
   grunt.registerTask('debug', [
+		'auto_install',
     'express:dev',
     'watch:server'
   ]);
 
   grunt.registerTask('serve', [
+		'auto_install',
     'express:prod',
     'express-keepalive'
   ]);

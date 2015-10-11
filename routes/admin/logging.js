@@ -1,7 +1,7 @@
 'use strict';
 
 var SocketIo = require('../../socket.io');
-var LoggerStream = require('../../logger').stream;
+var LoggerStream = require('logger-factory').stream;
 
 SocketIo.adminConnection('/admin/logging', function(socket) {
   function send(data) {

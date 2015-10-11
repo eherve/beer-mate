@@ -4,7 +4,7 @@ var nodemailer = require('nodemailer');
 var htmlToText = require('nodemailer-html-to-text').htmlToText;
 var jade = require('jade');
 var moment = require('moment');
-var logger = require('./logger').get('Email');
+var logger = require('logger-factory').get('Email');
 
 var fromAddress;
 var transport;

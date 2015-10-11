@@ -8,11 +8,5 @@ var schema = new Schema({
   value: { type: Mixed }
 });
 
-/*
- * Register
- */
-
-module.exports.register = function(db) {
-  module.exports = db.model('Parameter', schema);
-};
+module.exports = require('../database').db.model('Parameter', schema);
 
