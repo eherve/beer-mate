@@ -7,8 +7,8 @@ var Auth = require('../../tools/auth');
 
 router.path = '/logger';
 
-router.get('/', Auth.adminConnected, function(req, res, next) {
-  next(logger.getLevels());
+router.get('/', Auth.adminConnected, function(req, res) {
+  res.send(logger.getLevels());
 });
 
 router.post('/', Auth.adminConnected, function(req, res) {

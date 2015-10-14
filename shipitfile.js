@@ -27,11 +27,11 @@ module.exports = function (shipit) {
 			'cd %s && mkdir -p common/logs/ common/node_modules common/config',
 			shipit.config.deployTo));
 		shipit.remote(util.format(
-			'cd %s && && rm -rf node_modules  && ln -s %s/common/node_modules',
-			shipit.config.releasePath, shipit.config.deployTo));
+			'cd %s && rm -rf node_modules && ln -s %s/common/node_modules',
+			shipit.releasePath, shipit.config.deployTo));
 		shipit.remote(util.format(
 			'cd %s/config && ln -s %s/common/config/*.json -t .',
-			shipit.config.releasePath, shipit.config.deployTo));
+			shipit.releasePath, shipit.config.deployTo));
 	});
 
 	shipit.on('published', function() {
