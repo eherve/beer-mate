@@ -81,8 +81,7 @@ router.put('/:id/:version/:locale', Auth.adminConnected,
 			if (!version) { return next(new NotFoundError()); }
 			var locale = version.locales.id(req.params.locale);
 			if (!locale) { return next(new NotFoundError()); }
-  		        locale.data = req.body.content;
-		    
+			locale.data = req.body.content;
 			webContent.save(function(err) {
 				if (err) { return next(err); }
 				res.end();
