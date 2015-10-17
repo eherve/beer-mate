@@ -54,6 +54,8 @@ function addOpen(pub, day, df, data) {
 function transform(pub) {
 	pub.openPeriods = [];
 	var df = pub.days.default;
+	df.openH = df.openH || '00:00';
+	df.closeH = df.closeH || '23:59';
 	var keys = Object.keys(pub.days);
 	if (keys.length === 1 && df) { keys = days; }
 	keys.forEach(function (key) {
