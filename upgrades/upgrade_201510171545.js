@@ -3,6 +3,17 @@
 var util = require('util');
 var logger = require('logger-factory').get('Upgrade');
 
+var days = [
+	'sunday',
+	'monday',
+	'tuesday',
+	'wednesday',
+	'thursday',
+	'friday',
+	'saturday'
+
+];
+
 function parseOpenClose(day, open, close) {
 	var dayOpen = open > '2359' ? day + 1 : day;
 	var dayClose = open > close ? (dayOpen === 6 ? 0 : dayOpen + 1) : dayOpen;
@@ -43,13 +54,12 @@ function addOpen(pub, day, df, data) {
 function transform(pub) {
 	pub.openPeriods = [];
 	var df = pub.days.default;
-	Object.keys(pub.days).forEach(function(key) {
-		var day = key === 'monday' ? 1 : key === 'tuesday' ? 2
-			: key === 'wednesday' ? 3 : key === 'thursday' ? 4
-			: key === 'friday' ? 5 : key === 'saturday' ? 6
-			: key === 'sunday' ? 0 : -1;
+	var keys = Object.keys(pub.days);
+	if (keys.length === 1 && df) { keys = days; }
+	keys.forEach(function (key) {
+		var day = days.indexOf(key);
 		if (day === -1) { return; }
-		var data = pub.days[key];
+		var data = pub.days[key] || {};
 		if ((df.open || data.open === true) &&
 			(df.openH || data.openH) && (df.closeH || data.closeH)) {
 			addOpen(pub, day, df, data);
@@ -58,22 +68,22 @@ function transform(pub) {
 }
 
 module.exports.upgrade = function(cb) {
-  require('../models/pub').find({}, function(err, pubs) {
-    if (err) { return cb(err); }
+	require('../models/pub').find({}, function(err, pubs) {
+		if (err) { return cb(err); }
 		var processedPub = 0;
-    (function run(index) {
-      if (index >= pubs.length) {
+		(function run(index) {
+			if (index >= pubs.length) {
 				logger.info(util.format('%s processed pub', processedPub));
 				return cb();
 			}
-      var pub = pubs[index];
+			var pub = pubs[index];
 			logger.info(util.format('processing pub %s...', pub.name));
 			transform(pub);
 			++processedPub;
-      pub.save(function(err) {
-        if (err) { return cb(err); }
-        run(++index);
-      });
-    })(0);
-  });
+			pub.save(function(err) {
+				if (err) { return cb(err); }
+				run(++index);
+			});
+		})(0);
+	});
 };
