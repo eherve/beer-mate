@@ -36,6 +36,7 @@ function addOpen(pub, day, df, data) {
 		period.openHH = parsed.open;
 		period.closeHH = parsed.close;
 	}
+	logger.info(util.format('push period', period));
 	pub.openPeriods.push(period);
 }
 
@@ -43,10 +44,10 @@ function transform(pub) {
 	pub.openPeriods = [];
 	var df = pub.days.default;
 	Object.keys(pub.days).forEach(function(key) {
-		var day = key === 'monday' ? 0 : key === 'tuesday' ? 1
-			: key === 'wednesday' ? 2 : key === 'thursday' ? 3
-			: key === 'friday' ? 4 : key === 'saturday' ? 5
-			: key === 'sunday' ? 6 : -1;
+		var day = key === 'monday' ? 1 : key === 'tuesday' ? 2
+			: key === 'wednesday' ? 3 : key === 'thursday' ? 4
+			: key === 'friday' ? 5 : key === 'saturday' ? 6
+			: key === 'sunday' ? 0 : -1;
 		if (day === -1) { return; }
 		var data = pub.days[key];
 		if ((df.open || data.open === true) &&
