@@ -39,11 +39,10 @@ router.get('/mismatch', Auth.adminConnected, function(req, res, next) {
   });
 });
 
-function buildFetchPath(query, placeId) {
-	var path = '/maps/api/place/details/json'
+function buildFetchPath(placeId) {
+	return  '/maps/api/place/details/json'
 		.concat('?placeid=').concat(placeId)
 		.concat('&key=').concat(GOOGLE_PLACE_KEY);
-	return path;
 }
 
 function buildNearbyPath(query, name, address) {
@@ -70,7 +69,7 @@ function fetchGooglePub(query, placeId, name, address, cb) {
   var options = {
     hostname: 'maps.googleapis.com', port: 443, method: 'GET',
 		rejectUnauthorized: false,
-    path: placeId ? buildFetchPath(query, placeId)
+    path: placeId ? buildFetchPath(placeId)
 			: buildNearbyPath(query, name, address)
   };
   logger.debug(util.format('google fetch options', options));

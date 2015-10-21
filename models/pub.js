@@ -48,7 +48,6 @@ var openPeriodSchema = new Schema({
 		hours: { type: Number, validate: validator.mongoose.hourValidator },
 		minutes: { type: Number, validate: validator.mongoose.minuteValidator }
 	},
-	price: { type: Number },
 	openHH: {
 		day: { type: Number, validate: validator.mongoose.dayNumValidator },
 		hours: { type: Number, validate: validator.mongoose.hourValidator },
@@ -59,7 +58,6 @@ var openPeriodSchema = new Schema({
 		hours: { type: Number, validate: validator.mongoose.hourValidator },
 		minutes: { type: Number, validate: validator.mongoose.minuteValidator }
 	},
-	priceHH: { type: Number }
 });
 
 var schema = new Schema({
@@ -86,6 +84,8 @@ var schema = new Schema({
     sunday: daySchema
   },
 	openPeriods: [ openPeriodSchema ],
+	price: { type: Number },
+	priceHH: { type: Number },
   currency: { type: String },
   ratings: [ ratingSchema ],
   rating: { type: Number, min: 0, max: 5, mergeable: false },
