@@ -117,7 +117,7 @@ function setHappyHour(pub, period, openPeriod) {
 
 function updatingSyncPub(pub, data) {
 	pub.google.sync = new Date();
-	if (data && data.result) {
+	if (data && data.result && data.result[OPEN_PERIODS_PARAM]) {
 		var result = data.result;
 		pub.phone = result[PHONE_PARAM];
 		result[OPEN_PERIODS_PARAM].periods.forEach(function(period) {
@@ -131,7 +131,9 @@ function updatingSyncPub(pub, data) {
 			setHappyHour(pub, period, openPeriod);
 			pub.openPeriods.push(openPeriod);
 		});
+		return true;
 	}
+	return false;
 }
 
 function updateFromPreviousModel(pub, df) {
@@ -162,7 +164,9 @@ function transform(pub, cb) {
 				updateFromPreviousModel(pub, df);
 				cb();
 			} else {
-				updatingSyncPub(pub, data);
+				if (!updatingSyncPub(pub, data)) {
+					updateFromPreviousModel(pub, df);
+				}
 				cb();
 			}
 		});
