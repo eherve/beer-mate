@@ -21,7 +21,7 @@ var days = [
 ];
 
 function parseOpenClose(day, open, close) {
-	var dayOpen = open > '2359' ? day + 1 : day;
+	var dayOpen = day;
 	var dayClose = open > close ? (dayOpen === 6 ? 0 : dayOpen + 1) : dayOpen;
 	return {
 		open: {
@@ -39,15 +39,15 @@ function parseOpenClose(day, open, close) {
 
 function addOpen(pub, day, df, data) {
 	var period = { };
-	var open = (df.openH || data.openH).replace(':', '');
-	var close = (df.closeH || data.closeH).replace(':', '');
+	var open = (data.openH || df.openH).replace(':', '');
+	var close = (data.closeH || df.closeH).replace(':', '');
 	var parsed = parseOpenClose(day, open, close);
 	period.open = parsed.open;
 	period.close = parsed.close;
 	if (data.happyHour !== false && (df.happyHour || data.happyHour) &&
 		(df.openHH || data.openHH) && (df.closeHH || data.closeHH)) {
-		open = (df.openHH || data.openHH).replace(':', '');
-		close = (df.closeHH || data.closeHH).replace(':', '');
+		open = (data.openHH || df.openHH).replace(':', '');
+		close = (data.closeHH || df.closeHH).replace(':', '');
 		parsed = parseOpenClose(day, open, close);
 		period.openHH = parsed.open;
 		period.closeHH = parsed.close;
