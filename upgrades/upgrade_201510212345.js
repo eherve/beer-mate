@@ -119,8 +119,10 @@ function updatingSyncPub(pub, data) {
 	pub.google.sync = new Date();
 	if (data && data.result && data.result[OPEN_PERIODS_PARAM]) {
 		var result = data.result;
-		pub.phone = result[PHONE_PARAM];
+		pub.phone = result[PHONE_PARAM] || pub.phone;
 		result[OPEN_PERIODS_PARAM].periods.forEach(function(period) {
+			logger.debug(util.format('google period %s', period));
+			if (!period || !period.open || !period.close) { return; }
 			var openPeriod = { open: {}, close: {}, openHH: {}, closeHH: {} };
 			openPeriod.open.day = period.open.day;
 			openPeriod.open.hours = parseInt(period.open.time.substring(0, 2));
