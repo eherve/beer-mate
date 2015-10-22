@@ -78,8 +78,9 @@ function getFields(query) {
 
 router.get('/', function(req, res, next) {
   var filters = getFilters(req.query);
-  var fields = 'name address days openPeriods currency createdAt updatedAt';
-  PubModel.find(filters, fields, function(err, pubs) {
+  var fields = 'name address price priceHH currency createdAt updatedAt';
+	fields += req.params._v ? ' openPeriods' : ' days';
+	PubModel.find(filters, fields, function(err, pubs) {
     if (err) { return next(err); }
     res.send(pubs);
   });
