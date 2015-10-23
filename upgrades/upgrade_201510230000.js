@@ -8,6 +8,7 @@ var GOOGLE_PLACE_KEY = require('../config/application.json')
 	.google.placeKey;
 var OPEN_PERIODS_PARAM = 'opening_hours';
 var PHONE_PARAM = 'formatted_phone_number';
+var WEBSITE_PARAM = 'webSite';
 
 var days = [
 	'sunday',
@@ -109,7 +110,11 @@ function setHappyHour(pub, period, openPeriod) {
 			openPeriod.openHH.hours = openPeriod.open.hours;
 			openPeriod.openHH.minutes = openPeriod.open.minutes;
 		}
-		openPeriod.closeHH.day = period.open.day;
+		if (day.openHH <= open.closeHH) {
+			openPeriod.closeHH.day = period.open.day;
+		} else {
+			openPeriod.closeHH.day = period.close.day;
+		}
 		openPeriod.closeHH.hours = parseInt(data.closeHH.substring(0, 2));
 		openPeriod.closeHH.minutes = parseInt(data.closeHH.substring(3));
 	}
@@ -120,6 +125,7 @@ function updatingSyncPub(pub, data) {
 	if (data && data.result && data.result[OPEN_PERIODS_PARAM]) {
 		var result = data.result;
 		pub.phone = result[PHONE_PARAM] || pub.phone;
+		pub.webSite = result[WEBSITE_PARAM] || pub.webSite;
 		result[OPEN_PERIODS_PARAM].periods.forEach(function(period) {
 			logger.debug(util.format('google period %s', period));
 			if (!period || !period.open || !period.close) { return; }
