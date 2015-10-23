@@ -102,7 +102,7 @@ function fetchGooglePub(placeId, cb) {
 function setHappyHour(pub, period, openPeriod) {
 	var day = pub.days[days[period.open.day]];
 	var data = day && day.open !== undefined ? day : pub.days.default;
-	if (data.happyHour) {
+	if (data.happyHour && data.openHH && data.closeHH) {
 		openPeriod.openHH.day = period.open.day;
 		openPeriod.openHH.hours = parseInt(data.openHH.substring(0, 2));
 		openPeriod.openHH.minutes = parseInt(data.openHH.substring(3));
