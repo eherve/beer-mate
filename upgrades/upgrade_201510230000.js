@@ -110,7 +110,7 @@ function setHappyHour(pub, period, openPeriod) {
 			openPeriod.openHH.hours = openPeriod.open.hours;
 			openPeriod.openHH.minutes = openPeriod.open.minutes;
 		}
-		if (day.openHH <= open.closeHH) {
+		if (day.openHH <= day.closeHH) {
 			openPeriod.closeHH.day = period.open.day;
 		} else {
 			openPeriod.closeHH.day = period.close.day;
