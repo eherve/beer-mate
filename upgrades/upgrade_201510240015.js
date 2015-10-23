@@ -1,11 +1,9 @@
 'use strict';
 
 var util = require('util');
-var https = require('https');
 var logger = require('logger-factory').get('Upgrade');
+var google = require('../tools/google');
 
-var GOOGLE_PLACE_KEY = require('../config/application.json')
-	.google.placeKey;
 var OPEN_PERIODS_PARAM = 'opening_hours';
 var PHONE_PARAM = 'formatted_phone_number';
 var WEBSITE_PARAM = 'webSite';
@@ -18,7 +16,6 @@ var days = [
 	'thursday',
 	'friday',
 	'saturday'
-
 ];
 
 function parseOpenClose(day, open, close) {
@@ -55,48 +52,6 @@ function addOpen(pub, day, df, data) {
 	}
 	logger.info(util.format('push period', period));
 	pub.openPeriods.push(period);
-}
-
-
-function buildFetchPath(placeId) {
-	return '/maps/api/place/details/json'
-		.concat('?placeid=').concat(placeId)
-		.concat('&key=').concat(GOOGLE_PLACE_KEY);
-}
-
-function buildGoogleError(res, data) {
-	logger.error('google fetch', data);
-	var err = new Error();
-	err.status = res.statusCode;
-	return err;
-}
-
-function fetchGooglePub(placeId, cb) {
-	var options = {
-		hostname: 'maps.googleapis.com', port: 443, method: 'GET',
-		rejectUnauthorized: false,
-		path: buildFetchPath(placeId)
-	};
-	logger.debug(util.format('google fetch options', options));
-	var req = https.request(options, function(res) {
-		res.setEncoding('utf8');
-		var ggd = '';
-		res.on('data', function(data) { ggd += data; });
-		res.on('end', function() {
-			if (res.statusCode === 200) {
-				try { ggd = JSON.parse(ggd); }
-				catch (err) { return cb(err); }
-				if (['OK', 'ZERO_RESULTS'].indexOf(ggd.status) === -1) {
-					return cb(buildGoogleError(res, ggd));
-				}
-				logger.debug(util.format('google fetch',
-					util.inspect(ggd, false, null)));
-				cb(null, ggd);
-			} else { return cb(buildGoogleError(res, ggd)); }
-		});
-	});
-	req.end();
-	req.on('error', cb);
 }
 
 function setHappyHour(pub, period, openPeriod) {
@@ -166,9 +121,9 @@ function transform(pub, cb) {
 	pub.price = df.priceH;
 	pub.priceHH = df.priceHH;
 	if (pub.google.placeId) {
-		fetchGooglePub(pub.google.placeId, function(err, data) {
+		google.fetchGooglePub(pub.google.placeId, function(err, data) {
 			if (err) {
-				console.error(err);
+				logger.error(err);
 				updateFromPreviousModel(pub, df);
 				cb();
 			} else {
