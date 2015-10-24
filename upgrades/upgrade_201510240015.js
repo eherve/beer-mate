@@ -118,7 +118,7 @@ function updateFromPreviousModel(pub, df) {
 function transform(pub, cb) {
 	pub.openPeriods = [];
 	var df = pub.days.default;
-	pub.price = df.priceH;
+	pub.price = df.priceH || df.priceHH;
 	pub.priceHH = df.priceHH;
 	if (pub.google.placeId) {
 		google.fetchGooglePub(pub.google.placeId, function(err, data) {
