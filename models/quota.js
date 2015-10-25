@@ -12,12 +12,16 @@ var schema = new Schema({
 	remaining: { type: Number, required: true }
 });
 
-schema.methods.consume = function() {
-	this.model('Quota').update({ _id: this._id }, { $inc: { remaining: -1 }},
-		function(err) {
-			if (err) { logger.error(err); }
-		}
-	);
+schema.methods.consume = function(cb) {
+	cb = cb || function(err) { if (err) { logger.error(err); } };
+	this.model('Quota').update({ _id: this._id },
+		{ $inc: { remaining: -1 }}, cb);
+};
+
+schema.methods.empty = function(cb) {
+	cb = cb || function(err) { if (err) { logger.error(err); } };
+	this.model('Quota').update({ _id: this._id },
+		{ $set: { remaining: 0 }}, cb);
 };
 
 schema.statics.TYPE_GOOGLE = TYPE_GOOGLE;
