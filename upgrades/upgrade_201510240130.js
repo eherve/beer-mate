@@ -2,7 +2,7 @@
 
 var util = require('util');
 var logger = require('logger-factory').get('Upgrade');
-var google = require('../tools/google');
+var google = require('../google');
 
 var OPEN_PERIODS_PARAM = 'opening_hours';
 var PHONE_PARAM = 'formatted_phone_number';
@@ -82,7 +82,7 @@ function updatingSyncPub(pub, data) {
 		pub.phone = result[PHONE_PARAM] || pub.phone;
 		pub.webSite = result[WEBSITE_PARAM] || pub.webSite;
 		result[OPEN_PERIODS_PARAM].periods.forEach(function(period) {
-			logger.debug(util.format('google period %s', period));
+			logger.debug(util.format('google period %s', JSON.stringify(period)));
 			if (!period || !period.open || !period.close) { return; }
 			var openPeriod = { open: {}, close: {}, openHH: {}, closeHH: {} };
 			openPeriod.open.day = period.open.day;

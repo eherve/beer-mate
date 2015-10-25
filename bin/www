@@ -5,6 +5,9 @@
 var util = require('util');
 var path = require('path');
 
+// Init process methods
+require('../process');
+
 var loggers = require('logger-factory');
 loggers.configure(require('../config/logger.json'));
 var logger = loggers.get('Application');
@@ -13,21 +16,21 @@ var defaultLocale = 'fr';
 
 // I18n
 require('../i18n').configure({
-  update: process.env.NODE_ENV === 'development',
-  defaultLocale: defaultLocale,
-  locales: [ 'fr' ],
-  directory: path.join(__dirname, '../locales')
+	update: process.env.NODE_ENV === 'development',
+	defaultLocale: defaultLocale,
+	locales: [ 'fr' ],
+	directory: path.join(__dirname, '../locales')
 });
 
 // Resource
 require('../resource').configure({
-  defaultLocale: defaultLocale,
-  folders: {
-    email: { 
-      template: '{{filename}}_{{locale}}.jade',
-      dir: path.join(__dirname, '../resources/emails')
-    }
-  }
+	defaultLocale: defaultLocale,
+	folders: {
+		email: {
+			template: '{{filename}}_{{locale}}.jade',
+			dir: path.join(__dirname, '../resources/emails')
+		}
+	}
 });
 
 // Email
@@ -37,22 +40,37 @@ require('../email').configure(require('../config/email.json'));
 var database = require('../database');
 var databaseConfig = require('../config/database.json');
 database.connect(databaseConfig, function(err) {
-  if (err) { return logger.error(err);} 
+	if (err) {
+		logger.error(err);
+		process.stop();
+	}
 
-  // Redis
-  var redis = require('../redis.js');
-  var redisConfig = require('../config/application').session;
-  redis.connect(redisConfig, function(err) {
-    if (err) { return logger.error(err); }
+	// Google Places API
+	var google = require('../google');
+	google.initialization(function () {
+		if (err) {
+			logger.error('Google Initialization', err);
+			process.stop();
+		}
 
-    // Application
-    var app = require('../app');
-    var appConfig = require('../config/application.json');
-    app.set('port', process.env.PORT || appConfig.port || 9000);
-    var server = app.listen(app.get('port'), function() {
-        logger.info(util.format('Express server listening on port %s',
-          server.address().port));
-        require('../socket.io').connect(server);
-    });
- });
+		// Redis
+		var redis = require('../redis.js');
+		var redisConfig = require('../config/application').session;
+		redis.connect(redisConfig, function (err) {
+			if (err) {
+				logger.error(err);
+				process.stop();
+			}
+
+			// Application
+			var app = require('../app');
+			var appConfig = require('../config/application.json');
+			app.set('port', process.env.PORT || appConfig.port || 9000);
+			var server = app.listen(app.get('port'), function () {
+				logger.info(util.format('Express server listening on port %s',
+					server.address().port));
+				require('../socket.io').connect(server);
+			});
+		});
+	});
 });
