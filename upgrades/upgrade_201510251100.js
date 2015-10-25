@@ -52,6 +52,7 @@ function addOpen(pub, day, df, data) {
 }
 
 function updateFromPreviousModel(pub, df) {
+	logger.info('Sync from previous model');
 	df.openH = df.openH || '00:00';
 	df.closeH = df.closeH || '23:59';
 	var keys = Object.keys(pub.days);
@@ -79,6 +80,7 @@ function transform(pub, cb) {
 				updateFromPreviousModel(pub, df);
 			} else {
 				if (data && data.result && data.result[OPEN_PERIODS_PARAM]) {
+					logger.info('Sync with google');
 					google.syncPub(pub, data);
 				} else {
 					logger.info('no usable data in goggle model');
