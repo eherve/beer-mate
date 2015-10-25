@@ -116,43 +116,66 @@ function search(cb) {
 							return cb();
 						}
 						if (err) { return cb(err); }
-						if (data && data.results && data.results.length === 1) {
-							google.setProcessed(pub, data.results[0], function (err) {
+						google.setProcessed(pub,
+							data && data.results && data.results.length === 0?
+								data.results[0] : null,
+							function (err) {
 								if (err) { return cb(err); }
+								++processedPub;
 								run(++index);
 							});
-						} else { run(++index); }
 					});
 			})(0);
 		});
 }
 
 function sync(cb) {
+	require('../models/pub').find({ $or: [
+			{ 'google.sync': { $exists: false } }, { 'google.sync': null } ] },
+		function(err, pubs) {
+			if (err) { return cb(err); }
+			var processedPub = 0;
+			(function run(index) {
+				if (index >= pubs.length) {
+					logger.info(util.format('sync %s processed pub', processedPub));
+					return cb();
+				}
+				var pub = pubs[index];
+				logger.info(util.format('sync processing pub %s...', pub.name));
+				transform(pub, function() {
+					++processedPub;
+					pub.save(function (err) {
+						if (err) { return cb(err); }
+						run(++index);
+					});
+				});
+			})(0);
+		});
+}
+
+function cleanDB(cb) {
 	require('../models/pub').find({}, function(err, pubs) {
 		if (err) { return cb(err); }
-		var processedPub = 0;
 		(function run(index) {
-			if (index >= pubs.length) {
-				logger.info(util.format('sync %s processed pub', processedPub));
-				return cb();
-			}
+			if (index >= pubs.length) { return cb(); }
 			var pub = pubs[index];
-			logger.info(util.format('sync processing pub %s...', pub.name));
-			transform(pub, function() {
-				++processedPub;
-				pub.save(function (err) {
-					if (err) { return cb(err); }
-					run(++index);
-				});
+			pub.google.search = pub.google.processTime;
+			delete pub.google.processTime;
+			delete pub.google.processed;
+			pub.save(function(err) {
+				if (err) { return cb(err); }
+				run(++index);
 			});
 		})(0);
 	});
 }
 
 module.exports.upgrade = function(cb) {
-	search(function(err) {
+	cleanDB(function(err) {
 		if (err) { return cb(err); }
-		sync(cb);
+		search(function(err) {
+			if (err) { return cb(err); }
+			 sync(cb);
+		});
 	});
-
 };

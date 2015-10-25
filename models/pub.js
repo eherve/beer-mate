@@ -103,9 +103,12 @@ var schema = new Schema({
     mergeable: false },
   google: {
     placeId: { type: String, default: null },
+		search: { type: Date },
+		sync: { type: Date },
+		// TODO - remove
     processed: { type: Boolean, default: false },
-    processTime: { type: Date },
-		sync: { type: Date }
+    processTime: { type: Date }
+		// END
   }
 });
 

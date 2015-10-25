@@ -24,6 +24,12 @@ schema.methods.empty = function(cb) {
 		{ $set: { remaining: 0 }}, cb);
 };
 
+schema.methods.reset = function(type, value, cb) {
+	cb = cb || function(err) { if (err) { logger.error(err); } };
+	this.model('Quota').update({ type: type },
+		{ $set: { remaining: value } }, { multi: true }, cb);
+};
+
 schema.statics.TYPE_GOOGLE = TYPE_GOOGLE;
 
 module.exports = require('../database').db.model('Quota', schema);

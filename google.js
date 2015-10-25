@@ -37,7 +37,7 @@ function getAvailableKey(cb) {
 function fetchGooglePub(key, path, cb) {
 	var options = { hostname: 'maps.googleapis.com', port: 443, method: 'GET',
 		rejectUnauthorized: false, path: path };
-	logger.debug(util.format('google fetch options', options));
+	logger.debug(util.format('google fetch', path));
 	key.consume();
 	var req = https.request(options, function(res) {
 		res.setEncoding('utf8');
@@ -48,8 +48,6 @@ function fetchGooglePub(key, path, cb) {
 			try { data = JSON.parse(data); }
 			catch (err) { return cb(err); }
 			if (['OK', 'ZERO_RESULTS'].indexOf(data.status) !== -1) {
-				logger.debug(util.format('google fetched data',
-					util.inspect(data, false, null)));
 				return cb(null, data);
 			}
 			return cb(data.status);
@@ -92,8 +90,10 @@ module.exports.getGooglePub = function(placeId, cb) {
 
 function cleanName(name) {
 	var cleaned = name
-		.replace(/[ldm]'/i, '')
-		.replace(/\([^)]*\)/i, '');
+		.replace(/(^| |-)[ldms]'/ig, '$1')
+		.replace(/\([^)]*\)/ig, '')
+		.replace(/['-]/g, ' ')
+		.replace(/ [ ]+/g, '');
 	cleaned = encodeURIComponent(cleaned);
 	return cleaned;
 }
@@ -135,11 +135,10 @@ module.exports.searchGooglePub = function(pub, options, cb) {
 };
 
 module.exports.setProcessed = function(pub, data, cb) {
-	pub.google.processed = (data !== null);
-	pub.google.processTime = new Date();
+	pub.google.search = new Date();
 	pub.google.placeId = data ? data.place_id : null; // jshint ignore:line
 	pub.save(cb);
-}
+};
 
 /*
  * Synchronize pub methods
@@ -173,10 +172,7 @@ module.exports.syncPub = function(pub, data) {
 		pub.phone = result[PHONE_PARAM] || pub.phone;
 		pub.webSite = result[WEBSITE_PARAM] || pub.webSite;
 		result[OPEN_PERIODS_PARAM].periods.forEach(function (period) {
-			logger.debug(util.format('google period %s', JSON.stringify(period)));
-			if (!period || !period.open || !period.close) {
-				return;
-			}
+			if (!period || !period.open || !period.close) { return; }
 			var openPeriod = {open: {}, close: {}, openHH: {}, closeHH: {}};
 			openPeriod.open.day = period.open.day;
 			openPeriod.open.hours = parseInt(period.open.time.substring(0, 2));
@@ -243,11 +239,10 @@ module.exports.startWorker = function() {
 	(function run() {
 		timeout = setTimeout(function () {
 			logger.info('run reset quota');
-			module.exports.update({type: Quota.TYPE_GOOGLE},
-				{$set: {remaining: QUOTA_GOOGLE}}, {multi: true}, function (err) {
-					if (err) { logger.error(err); }
-					run();
-				});
+			Quota.reset(Quota.TYPE_GOOGLE, QUOTA_GOOGLE, function (err) {
+				if (err) { logger.error(err); }
+				run();
+			});
 		}, getTimeoutForMidnightPT());
 	})();
 	process.onStop(module.exports.stopWorker);
