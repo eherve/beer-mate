@@ -140,7 +140,6 @@ function sync(cb) {
 			logger.info(util.format('sync processing pub %s...', pub.name));
 			transform(pub, function() {
 				++processedPub;
-				pub.google.processed = pub.google.processedTime;
 				pub.save(function (err) {
 					if (err) { return cb(err); }
 					run(++index);

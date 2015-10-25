@@ -135,7 +135,8 @@ module.exports.searchGooglePub = function(pub, options, cb) {
 };
 
 module.exports.setProcessed = function(pub, data, cb) {
-	pub.google.processed = new Date();
+	pub.google.processed = (data !== null);
+	pub.google.processTime = new Date();
 	pub.google.placeId = data ? data.place_id : null; // jshint ignore:line
 	pub.save(cb);
 }
