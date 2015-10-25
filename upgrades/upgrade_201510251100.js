@@ -107,16 +107,17 @@ function search(cb) {
 				}
 				var pub = pubs[index];
 				logger.info(util.format('search processing pub %s...', pub.name));
-				google.searchGooglePub(pub, null, function(err, data) {
-					if (err) { cb(err); }
-					if (data && data.results && data.results.length === 1) {
-						pub.google.placeId = data.results[0].place_id; // jshint ignore:line
-						pub.save(function (err) {
-							if (err) { return cb(err); }
-							run(++index);
-						});
-					} else { run(++index); }
-				});
+				google.searchGooglePub(pub, { types: ['bar', 'restaurant']},
+					function(err, data) {
+						if (err) { cb(err); }
+						if (data && data.results && data.results.length === 1) {
+							pub.google.placeId = data.results[0].place_id; // jshint ignore:line
+							pub.save(function (err) {
+								if (err) { return cb(err); }
+								run(++index);
+							});
+						} else { run(++index); }
+					});
 			})(0);
 		});
 }

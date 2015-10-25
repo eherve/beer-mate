@@ -91,14 +91,20 @@ module.exports.getGooglePub = function(placeId, cb) {
  */
 
 function buildNearbyPath(key, pub, options) {
-	var path = '/maps/api/place/nearbysearch/json'
-		.concat('?types=').concat('bar|restaurant')
-		.concat('&location=').concat(pub.address.loc[1]).concat(',')
+	var path = '/maps/api/place/nearbysearch/json';
+	if (options.types) {
+		var types = ('string' === typeof options.types) ? options.types
+			: options.types.join('|');
+		path = path.concat('?types=').concat(types);
+	} else {
+		path = path.concat('?types=').concat('bar');
+	}
+	path = path.concat('&location=').concat(pub.address.loc[1]).concat(',')
 		.concat(pub.address.loc[0])
 		.concat('&radius=').concat(options.radius || 50);
-		if (options.useName !== false) {
-			path = path.concat('&name=').concat(encodeURIComponent(pub.name));
-		}
+	if (options.useName !== false) {
+		path = path.concat('&name=').concat(encodeURIComponent(pub.name));
+	}
 	path = path.concat('&key=').concat(key.key);
 	return path;
 }
