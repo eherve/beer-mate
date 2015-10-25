@@ -109,6 +109,10 @@ function search(cb) {
 				logger.info(util.format('search processing pub %s...', pub.name));
 				google.searchGooglePub(pub, { types: ['bar', 'restaurant']},
 					function(err, data) {
+						if (err === google.OVER_QUERY_LIMIT) {
+							logger.info(err);
+							cb();
+						}
 						if (err) { cb(err); }
 						if (data && data.results && data.results.length === 1) {
 							pub.google.placeId = data.results[0].place_id; // jshint ignore:line
