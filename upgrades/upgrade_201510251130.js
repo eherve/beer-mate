@@ -128,9 +128,7 @@ function search(cb) {
 }
 
 function sync(cb) {
-	require('../models/pub').find({ $or: [
-			{ 'google.sync': { $exists: false } }, { 'google.sync': null } ] },
-		function(err, pubs) {
+	require('../models/pub').find({}, function(err, pubs) {
 		if (err) { return cb(err); }
 		var processedPub = 0;
 		(function run(index) {
@@ -142,6 +140,7 @@ function sync(cb) {
 			logger.info(util.format('sync processing pub %s...', pub.name));
 			transform(pub, function() {
 				++processedPub;
+				pub.google.processed = pub.google.processedTime;
 				pub.save(function (err) {
 					if (err) { return cb(err); }
 					run(++index);
