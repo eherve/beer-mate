@@ -90,6 +90,14 @@ module.exports.getGooglePub = function(placeId, cb) {
  * Search pub methods
  */
 
+function cleanName(name) {
+	var cleaned = name
+		.replace(/[ldm]'/i, '')
+		.replace(/\([^)]*\)/i, '');
+	cleaned = encodeURIComponent(cleaned);
+	return cleaned;
+}
+
 function buildNearbyPath(key, pub, options) {
 	var path = '/maps/api/place/nearbysearch/json';
 	if (options.types) {
@@ -101,9 +109,9 @@ function buildNearbyPath(key, pub, options) {
 	}
 	path = path.concat('&location=').concat(pub.address.loc[1]).concat(',')
 		.concat(pub.address.loc[0])
-		.concat('&radius=').concat(options.radius || 50);
+		.concat('&radius=').concat(options.radius || 200);
 	if (options.useName !== false) {
-		path = path.concat('&name=').concat(encodeURIComponent(pub.name));
+		path = path.concat('&name=').concat(cleanName(pub.name));
 	}
 	path = path.concat('&key=').concat(key.key);
 	return path;
@@ -125,6 +133,12 @@ module.exports.searchGooglePub = function(pub, options, cb) {
 		});
 	});
 };
+
+module.exports.setProcessed = function(pub, data, cb) {
+	pub.google.processed = new Date();
+	pub.google.placeId = data ? data.place_id : null; // jshint ignore:line
+	pub.save(cb);
+}
 
 /*
  * Synchronize pub methods

@@ -103,8 +103,7 @@ var schema = new Schema({
     mergeable: false },
   google: {
     placeId: { type: String, default: null },
-    processed: { type: Boolean, default: false },
-    processTime: { type: Date },
+		processed: { type: Date },
 		sync: { type: Date }
   }
 });

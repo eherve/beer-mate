@@ -52,7 +52,7 @@ function addOpen(pub, day, df, data) {
 }
 
 function updateFromPreviousModel(pub, df) {
-	logger.info('Sync from previous model');
+	logger.info('sync from previous model');
 	df.openH = df.openH || '00:00';
 	df.closeH = df.closeH || '23:59';
 	var keys = Object.keys(pub.days);
@@ -80,7 +80,7 @@ function transform(pub, cb) {
 				updateFromPreviousModel(pub, df);
 			} else {
 				if (data && data.result && data.result[OPEN_PERIODS_PARAM]) {
-					logger.info('Sync with google');
+					logger.info('sync with google');
 					google.syncPub(pub, data);
 				} else {
 					logger.info('no usable data in goggle model');
@@ -117,8 +117,7 @@ function search(cb) {
 						}
 						if (err) { return cb(err); }
 						if (data && data.results && data.results.length === 1) {
-							pub.google.placeId = data.results[0].place_id; // jshint ignore:line
-							pub.save(function (err) {
+							google.setProcessed(pub, data.results[0], function (err) {
 								if (err) { return cb(err); }
 								run(++index);
 							});
@@ -129,7 +128,9 @@ function search(cb) {
 }
 
 function sync(cb) {
-	require('../models/pub').find({}, function(err, pubs) {
+	require('../models/pub').find({ $or: [
+			{ 'google.sync': { $exists: false } }, { 'google.sync': null } ] },
+		function(err, pubs) {
 		if (err) { return cb(err); }
 		var processedPub = 0;
 		(function run(index) {

@@ -95,8 +95,7 @@ function fetchGooglePub(query, placeId, name, address, cb) {
 }
 
 function updatingProcessedPub(pub, data, cb) {
-  pub.google.processed = true;
-  pub.google.processTime = new Date();
+  pub.google.processed = new Date();
   if (data && data.results && data.results.length === 1) {
     pub.google.placeId = data.results[0][PLACE_ID_PARAM];
   }
