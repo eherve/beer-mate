@@ -111,9 +111,9 @@ function search(cb) {
 					function(err, data) {
 						if (err === google.OVER_QUERY_LIMIT) {
 							logger.info(err);
-							cb();
+							return cb();
 						}
-						if (err) { cb(err); }
+						if (err) { return cb(err); }
 						if (data && data.results && data.results.length === 1) {
 							pub.google.placeId = data.results[0].place_id; // jshint ignore:line
 							pub.save(function (err) {

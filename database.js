@@ -9,14 +9,14 @@ var Merge = require('mongoose-merge-plugin');
 var logger = require('logger-factory').get('Database');
 
 mongoose.set('debug', function(collectionName, method, query) {
-  logger.debug(util.format('run mongo collection: %s, method: %s, quey: %s',
+  logger.debug(util.format('run mongo collection: %s, method: %s, query: %s',
     collectionName, method, JSON.stringify(query)));
 });
 
 DataTable.configure({
   debug: true,
   logger: function(level, args) {
-    require('./logger').get('DataTable')[level].apply(this, args);
+    require('logger-factory').get('DataTable')[level].apply(this, args);
   }
 });
 mongoose.plugin(DataTable.init);
