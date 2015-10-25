@@ -117,7 +117,7 @@ function search(cb) {
 						}
 						if (err) { return cb(err); }
 						google.setProcessed(pub,
-							data && data.results && data.results.length === 0?
+							data && data.results && data.results.length === 1 ?
 								data.results[0] : null,
 							function (err) {
 								if (err) { return cb(err); }
