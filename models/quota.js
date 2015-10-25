@@ -24,7 +24,7 @@ schema.methods.empty = function(cb) {
 		{ $set: { remaining: 0 }}, cb);
 };
 
-schema.methods.reset = function(type, value, cb) {
+schema.statics.reset = function(type, value, cb) {
 	cb = cb || function(err) { if (err) { logger.error(err); } };
 	this.model('Quota').update({ type: type },
 		{ $set: { remaining: value } }, { multi: true }, cb);

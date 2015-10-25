@@ -154,7 +154,9 @@ function sync(cb) {
 }
 
 function cleanDB(cb) {
-	require('../models/pub').find({}, function(err, pubs) {
+	require('../models/pub').find({
+		'google.search': { $exists: false }
+	}, function(err, pubs) {
 		if (err) { return cb(err); }
 		(function run(index) {
 			if (index >= pubs.length) { return cb(); }
@@ -171,11 +173,17 @@ function cleanDB(cb) {
 }
 
 module.exports.upgrade = function(cb) {
-	cleanDB(function(err) {
+	google.initialization(function(err) {
 		if (err) { return cb(err); }
-		search(function(err) {
+		google.reset(function(err) {
 			if (err) { return cb(err); }
-			 sync(cb);
+			cleanDB(function(err) {
+				if (err) { return cb(err); }
+				search(function(err) {
+					if (err) { return cb(err); }
+					sync(cb);
+				});
+			});
 		});
 	});
 };

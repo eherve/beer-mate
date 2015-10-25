@@ -47,7 +47,7 @@ database.connect(databaseConfig, function(err) {
 
 	// Google Places API
 	var google = require('../google');
-	google.initialization(function () {
+	google.initialization(function (err) {
 		if (err) {
 			logger.error('Google Initialization', err);
 			process.stop();

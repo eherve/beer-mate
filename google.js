@@ -30,6 +30,7 @@ function getAvailableKey(cb) {
 	Quota.findOne({ type: Quota.TYPE_GOOGLE, remaining: { $gt: 0 } },
 		function(err, quota) {
 			if (err) { return cb(err); }
+			logger.info(util.format('get key available: %s', quota));
 			cb(null, quota ? quota : null);
 		});
 }
@@ -194,13 +195,15 @@ module.exports.syncPub = function(pub, data) {
  * Set Google Places API Keys
  */
 
+var timeout = null;
+
 module.exports.initialization = function(cb) {
 	Quota.remove({ type: Quota.TYPE_GOOGLE, key: { $nin: GOOGLE_PLACE_KEYS } },
 		function(err) {
 			if (err) { return cb(err); }
 			(function run(index) {
 				if (index >= GOOGLE_PLACE_KEYS.length) {
-					module.exports.startWorker();
+					if (timeout === null) { module.exports.startWorker(); }
 					return cb();
 				}
 				var quota = { type: Quota.TYPE_GOOGLE, key: GOOGLE_PLACE_KEYS[index],
@@ -214,14 +217,16 @@ module.exports.initialization = function(cb) {
 		});
 };
 
+module.exports.reset = function(cb) {
+	Quota.reset(Quota.TYPE_GOOGLE, QUOTA_GOOGLE, cb);
+};
+
 // TODO - create a worker handler
 
 /*
  * Worker
  * becarful this is not compatible with load balancing
  */
-
-var timeout;
 
 function getTimeoutForMidnightPT() {
 	var today = new Date();
