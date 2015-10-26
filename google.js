@@ -125,13 +125,13 @@ module.exports.searchGooglePub = function(pub, options, cb) {
 		if (key === null) { return cb(OVER_QUERY_LIMIT); }
 		fetchGooglePub(key, buildNearbyPath(key, pub, options),
 			function (err, data) {
-			if (err === OVER_QUERY_LIMIT) {
-				key.empty(function(err) {
-					if (err) { return cb(err); }
-					module.exports.searchGooglePub(pub, options, cb);
-				});
-			} else { cb(err, data); }
-		});
+				if (err === OVER_QUERY_LIMIT) {
+					key.empty(function(err) {
+						if (err) { return cb(err); }
+						module.exports.searchGooglePub(pub, options, cb);
+					});
+				} else { cb(err, data); }
+			});
 	});
 };
 
@@ -195,7 +195,25 @@ module.exports.syncPub = function(pub, data) {
  * Set Google Places API Keys
  */
 
+function getMidnightPT() {
+	var today = new Date();
+	return new Date(Date.UTC(
+		today.getFullYear(), today.getMonth(), today.getDate()));
+}
+
 var timeout = null;
+
+function reset(cb) {
+	Quota.count({ type: Quota.TYPE_GOOGLE,
+			$or: [ { reset: { $exists: false } },
+				{ reset: { $lt: getMidnightPT() } } ] },
+		function(err, count) {
+			if (err) { logger.error(err); }
+			if (count > 0) {
+				Quota.reset(Quota.TYPE_GOOGLE, QUOTA_GOOGLE, cb);
+			} else { cb(); }
+		});
+}
 
 module.exports.initialization = function(cb) {
 	Quota.remove({ type: Quota.TYPE_GOOGLE, key: { $nin: GOOGLE_PLACE_KEYS } },
@@ -203,11 +221,16 @@ module.exports.initialization = function(cb) {
 			if (err) { return cb(err); }
 			(function run(index) {
 				if (index >= GOOGLE_PLACE_KEYS.length) {
-					if (timeout === null) { module.exports.startWorker(); }
-					return cb();
+					if (timeout === null) {
+						return reset(function(err) {
+							if (err) { logger.error(err); }
+							module.exports.startWorker();
+							cb();
+						});
+					} else { return cb(); }
 				}
 				var quota = { type: Quota.TYPE_GOOGLE, key: GOOGLE_PLACE_KEYS[index],
-					remaining: QUOTA_GOOGLE };
+					remaining: QUOTA_GOOGLE, reset: new Date() };
 				Quota.update({ type: Quota.TYPE_GOOGLE, key: quota.key },
 					{ $setOnInsert: quota }, { upsert: true }, function(err) {
 						if (err) { return cb(err); }
@@ -230,8 +253,7 @@ module.exports.reset = function(cb) {
 
 function getTimeoutForMidnightPT() {
 	var today = new Date();
-	var date = new Date(Date.UTC(
-		today.getFullYear(), today.getMonth(), today.getDate()));
+	var date = getMidnightPT();
 	date.setDate(date.getDate() + 1);
 	return date.getTime() - today.getTime();
 }
@@ -245,7 +267,9 @@ module.exports.startWorker = function() {
 		timeout = setTimeout(function () {
 			logger.info('run reset quota');
 			Quota.reset(Quota.TYPE_GOOGLE, QUOTA_GOOGLE, function (err) {
-				if (err) { logger.error(err); }
+				if (err) {
+					logger.error(err);
+				}
 				run();
 			});
 		}, getTimeoutForMidnightPT());

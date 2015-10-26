@@ -9,7 +9,8 @@ var TYPES = [ TYPE_GOOGLE ];
 var schema = new Schema({
 	type: { type: String, required: true, enum: TYPES },
 	key: { type: String, required: true },
-	remaining: { type: Number, required: true }
+	remaining: { type: Number, required: true },
+	reset: { type: Date, default: null }
 });
 
 schema.methods.consume = function(cb) {
@@ -27,7 +28,8 @@ schema.methods.empty = function(cb) {
 schema.statics.reset = function(type, value, cb) {
 	cb = cb || function(err) { if (err) { logger.error(err); } };
 	this.model('Quota').update({ type: type },
-		{ $set: { remaining: value } }, { multi: true }, cb);
+		{ $set: { remaining: value, reset: new Date() } },
+		{ multi: true }, cb);
 };
 
 schema.statics.TYPE_GOOGLE = TYPE_GOOGLE;

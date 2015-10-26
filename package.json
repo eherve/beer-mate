@@ -15,7 +15,7 @@
     "jade": "~1.6.0",
     "mkdirp": "~0.5.0",
     "moment": "~2.9.0",
-    "mongoose": "~3.8.21",
+    "mongoose": "~4.2.0",
     "mongoose-datatable": "~0.3.1",
     "mongoose-merge-plugin": "0.0.5",
     "mongoose-validator": "~1.0.3",
