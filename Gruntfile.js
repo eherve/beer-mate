@@ -91,13 +91,30 @@ module.exports = function(grunt) {
         script: 'bin/www', port: '<%=port%>',
         output: '.*Express server listening on port [0-9]+.*', debug: false
       },
+			test: {
+				options: { debug: false, 'node_env': 'test', delay: 5000 }
+			},
       dev: {
         options: { debug: true, 'node_env': 'development' }
       },
       prod: {
         options: { 'node_env': 'production' }
       }
-    }
+    },
+
+		// Configure a mochaTest task
+		mochaTest: {
+			test: {
+				options: {
+					reporter: 'spec',
+					// Optionally suppress output to standard out
+					quiet: false,
+					// Optionally clear the require cache before running tests
+					clearRequireCache: false
+				},
+				src: ['test/**/*.js']
+			}
+		}
 
   });
 
@@ -114,7 +131,6 @@ module.exports = function(grunt) {
       }, RELOAD_WAITING_TIMEOUT);
     }
   );
-
 
   grunt.registerTask('express-keepalive',
     'Keep grunt running',
@@ -141,5 +157,11 @@ module.exports = function(grunt) {
     'express:prod',
     'express-keepalive'
   ]);
+
+	grunt.registerTask('test', [
+		'auto_install',
+		'express:test',
+		'mochaTest'
+	]);
 
 };

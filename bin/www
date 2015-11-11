@@ -9,7 +9,11 @@ var path = require('path');
 require('../process');
 
 var loggers = require('logger-factory');
-loggers.configure(require('../config/logger.json'));
+var loggersConfig = require('../config/logger.json');
+if (loggersConfig[process.env.NODE_ENV]) {
+	loggersConfig = loggersConfig[process.env.NODE_ENV];
+}
+loggers.configure(loggersConfig);
 var logger = loggers.get('Application');
 
 var defaultLocale = 'fr';

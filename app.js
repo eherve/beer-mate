@@ -2,7 +2,6 @@
 'use strict';
 
 var express = require('express');
-var fs = require('fs');
 var path = require('path');
 var logger = require('logger-factory').expressLogger;
 var cookieParser = require('cookie-parser');
@@ -24,13 +23,6 @@ app.use(cookieParser());
 
 var publicFolder = path.join(__dirname, 'public');
 app.use(express.static(publicFolder));
-
-// Favicon
-var faviconFile = path.join(publicFolder, 'favicon.ico');
-if (fs.existsSync(faviconFile)) {
-  var favicon = require('serve-favicon');
-  app.use(favicon(faviconFile));
-}
 
 if (process.env.NODE_ENV === 'development') {
   app.use(function(req, res, next) {

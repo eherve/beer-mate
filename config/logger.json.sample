@@ -8,5 +8,8 @@
   },
   "levels": {
     "I18n": { "console": "info" }
+  },
+  "test": {
+  	"outputs": {}
   }
 }
