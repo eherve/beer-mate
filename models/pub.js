@@ -86,7 +86,7 @@ var schema = new Schema({
 	openPeriods: [ openPeriodSchema ],
 	price: { type: Number },
 	priceHH: { type: Number },
-  currency: { type: String },
+  currency: { type: String, required: true },
   ratings: [ ratingSchema ],
   rating: { type: Number, min: 0, max: 5, mergeable: false },
   comments: [ commentSchema ],
