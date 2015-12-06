@@ -5,12 +5,14 @@ var https = require('https');
 
 var logger = require('logger-factory').get('Google Places');
 var Quota = require('./models/quota');
+var batch = require('./batch');
 
 var QUOTA_GOOGLE = 1000;
 var GOOGLE_PLACE_KEYS = require('./config/application.json')
 		.google.placeKeys || [];
 
 var OVER_QUERY_LIMIT = module.exports.OVER_QUERY_LIMIT = 'OVER_QUERY_LIMIT';
+var TYPE_GOOGLE = Quota.TYPE_GOOGLE;
 
 var OPEN_PERIODS_PARAM = 'opening_hours';
 var PHONE_PARAM = 'formatted_phone_number';
@@ -27,7 +29,7 @@ var DAYS = [
 ];
 
 function getAvailableKey(cb) {
-	Quota.findOne({ type: Quota.TYPE_GOOGLE, remaining: { $gt: 0 } },
+	Quota.findOne({ type: TYPE_GOOGLE, remaining: { $gt: 0 } },
 		function(err, quota) {
 			if (err) { return cb(err); }
 			logger.info(util.format('get key available: %s', quota));
@@ -38,14 +40,18 @@ function getAvailableKey(cb) {
 function fetchGooglePub(key, path, cb) {
 	var options = { hostname: 'maps.googleapis.com', port: 443, method: 'GET',
 		rejectUnauthorized: false, path: path };
-	logger.debug(util.format('google fetch', path));
+	logger.debug(util.format('google fetch https://%s%s',
+		options.hostname, options.path));
 	key.consume();
 	var req = https.request(options, function(res) {
 		res.setEncoding('utf8');
 		var data = '';
 		res.on('data', function(d) { data += d; });
 		res.on('end', function() {
-			if (res.statusCode !== 200) { return cb(res.statusCode); }
+			if (res.statusCode === OVER_QUERY_LIMIT) { return cb(res.statusCode); }
+			if (res.statusCode !== 200) {
+				return cb({ status: res.statusCode, message: res.error_message }); // jshint ignore:line
+			}
 			try { data = JSON.parse(data); }
 			catch (err) { return cb(err); }
 			if (['OK', 'ZERO_RESULTS'].indexOf(data.status) !== -1) {
@@ -106,7 +112,7 @@ function buildNearbyPath(key, pub, options) {
 			: options.types.join('|');
 		path = path.concat('?types=').concat(types);
 	} else {
-		path = path.concat('?types=').concat('bar');
+		path = path.concat('?types=').concat('bar|cafe');
 	}
 	path = path.concat('&location=').concat(pub.address.loc[1]).concat(',')
 		.concat(pub.address.loc[0])
@@ -142,6 +148,34 @@ module.exports.setProcessed = function(pub, data, cb) {
 };
 
 /*
+ * Radar search methods
+ */
+
+function buildRadarSearchPath(key, lat, lng, radius) {
+	return '/maps/api/place/radarsearch/json'
+		.concat('?types=').concat('bar|cafe')
+		.concat('&location=').concat(lat).concat(',').concat(lng)
+		.concat('&radius=').concat(radius || 1000)
+		.concat('&key=').concat(key.key);
+}
+
+module.exports.radarSearchGooglePub = function(lat, lng, radius, cb) {
+	getAvailableKey(function(err, key) {
+		if (err) { return cb(err); }
+		if (key === null) { return cb(OVER_QUERY_LIMIT); }
+		fetchGooglePub(key, buildRadarSearchPath(key, lat, lng, radius),
+			function (err, data) {
+				if (err === OVER_QUERY_LIMIT) {
+					key.empty(function(err) {
+						if (err) { return cb(err); }
+						module.exports.radarSearchGooglePub(lat, lng, radius, cb);
+					});
+				} else { cb(err, data); }
+			});
+	});
+};
+
+/*
  * Synchronize pub methods
  */
 
@@ -166,27 +200,67 @@ function setHappyHour(pub, period, openPeriod) {
 	}
 }
 
+function syncAddress(pub, result) {
+	var addressComponents = result.address_components; // jshint ignore:line
+	var address = {};
+	for (var index = 0; index < addressComponents.length; ++index) {
+		var component = addressComponents[index];
+		if (component.types.indexOf('street_number') !== -1) {
+			address.streetNumber = component.long_name; // jshint ignore:line
+		}
+		if (component.types.indexOf('route') !== -1) {
+			address.route = component.long_name; // jshint ignore:line
+		}
+		if (component.types.indexOf('locality') !== -1) {
+			address.locality = component.long_name; // jshint ignore:line
+		}
+		if (component.types.indexOf('country') !== -1) {
+			address.country = component.long_name; // jshint ignore:line
+		}
+		if (component.types.indexOf('postal_code') !== -1) {
+			address.postalCode = component.long_name; // jshint ignore:line
+		}
+	}
+	pub.address.street = address.streetNumber ?
+		(address.streetNumber + ' ' + address.route) : address.route;
+	pub.address.city = address.locality;
+	pub.address.postalCode = address.postalCode;
+	pub.address.country = address.country;
+}
+
 module.exports.syncPub = function(pub, data) {
-	if (data && data.result && data.result[OPEN_PERIODS_PARAM]) {
+	if (data && data.result) {
+		pub.google = pub.google || {};
 		pub.google.sync = new Date();
 		var result = data.result;
+		pub.name = result.name;
+		syncAddress(pub, result);
+		pub.google = pub.google || {};
+		pub.google.placeId = result.place_id; // jshint ignore:line
+		pub.address = pub.address || {};
+		pub.address.loc =
+			[ result.geometry.location.lng, result.geometry.location.lat ];
 		pub.phone = result[PHONE_PARAM] || pub.phone;
 		pub.webSite = result[WEBSITE_PARAM] || pub.webSite;
-		result[OPEN_PERIODS_PARAM].periods.forEach(function (period) {
-			if (!period || !period.open || !period.close) { return; }
-			var openPeriod = {open: {}, close: {}, openHH: {}, closeHH: {}};
-			openPeriod.open.day = period.open.day;
-			openPeriod.open.hours = parseInt(period.open.time.substring(0, 2));
-			openPeriod.open.minutes = parseInt(period.open.time.substring(2));
-			openPeriod.close.day = period.close.day;
-			openPeriod.close.hours = parseInt(period.close.time.substring(0, 2));
-			openPeriod.close.minutes = parseInt(period.close.time.substring(2));
-			// INFO - previous model
-			if (pub.days) {
-				setHappyHour(pub, period, openPeriod);
-			}
-			pub.openPeriods.push(openPeriod);
-		});
+		if (data.result[OPEN_PERIODS_PARAM]) {
+			result[OPEN_PERIODS_PARAM].periods.forEach(function (period) {
+				if (!period || !period.open || !period.close) {
+					return;
+				}
+				var openPeriod = {open: {}, close: {}, openHH: {}, closeHH: {}};
+				openPeriod.open.day = period.open.day;
+				openPeriod.open.hours = parseInt(period.open.time.substring(0, 2));
+				openPeriod.open.minutes = parseInt(period.open.time.substring(2));
+				openPeriod.close.day = period.close.day;
+				openPeriod.close.hours = parseInt(period.close.time.substring(0, 2));
+				openPeriod.close.minutes = parseInt(period.close.time.substring(2));
+				// INFO - previous model
+				if (pub.days) {
+					setHappyHour(pub, period, openPeriod);
+				}
+				pub.openPeriods.push(openPeriod);
+			});
+		}
 	}
 };
 
@@ -204,34 +278,38 @@ function getMidnightPT() {
 var timeout = null;
 
 function reset(cb) {
-	Quota.count({ type: Quota.TYPE_GOOGLE,
+	Quota.count({ type: TYPE_GOOGLE,
 			$or: [ { reset: { $exists: false } },
 				{ reset: { $lt: getMidnightPT() } } ] },
 		function(err, count) {
 			if (err) { logger.error(err); }
 			if (count > 0) {
-				Quota.reset(Quota.TYPE_GOOGLE, QUOTA_GOOGLE, cb);
+				Quota.reset(TYPE_GOOGLE, QUOTA_GOOGLE, cb);
 			} else { cb(); }
 		});
 }
 
 module.exports.initialization = function(cb) {
-	Quota.remove({ type: Quota.TYPE_GOOGLE, key: { $nin: GOOGLE_PLACE_KEYS } },
+	Quota.remove({ type: TYPE_GOOGLE, key: { $nin: GOOGLE_PLACE_KEYS } },
 		function(err) {
 			if (err) { return cb(err); }
 			(function run(index) {
 				if (index >= GOOGLE_PLACE_KEYS.length) {
 					if (timeout === null) {
 						return reset(function(err) {
-							if (err) { logger.error(err); }
-							module.exports.startWorker();
+							if (err) {
+								logger.error(err);
+							}
+							batch.registerBatch('google quota', function(cb) {
+								Quota.reset(TYPE_GOOGLE, QUOTA_GOOGLE, cb);
+							}, batch.getTimeoutForMidnightPT).start();
 							cb();
 						});
 					} else { return cb(); }
 				}
-				var quota = { type: Quota.TYPE_GOOGLE, key: GOOGLE_PLACE_KEYS[index],
+				var quota = { type: TYPE_GOOGLE, key: GOOGLE_PLACE_KEYS[index],
 					remaining: QUOTA_GOOGLE, reset: new Date() };
-				Quota.update({ type: Quota.TYPE_GOOGLE, key: quota.key },
+				Quota.update({ type: TYPE_GOOGLE, key: quota.key },
 					{ $setOnInsert: quota }, { upsert: true }, function(err) {
 						if (err) { return cb(err); }
 						run(++index);
@@ -241,38 +319,6 @@ module.exports.initialization = function(cb) {
 };
 
 module.exports.reset = function(cb) {
-	Quota.reset(Quota.TYPE_GOOGLE, QUOTA_GOOGLE, cb);
+	Quota.reset(TYPE_GOOGLE, QUOTA_GOOGLE, cb);
 };
 
-// TODO - create a worker handler
-
-/*
- * Worker
- * becarful this is not compatible with load balancing
- */
-
-function getTimeoutForMidnightPT() {
-	var today = new Date();
-	var date = getMidnightPT();
-	date.setDate(date.getDate() + 1);
-	return date.getTime() - today.getTime();
-}
-
-module.exports.stopWorker = function() {
-	clearTimeout(timeout);
-};
-
-module.exports.startWorker = function() {
-	(function run() {
-		timeout = setTimeout(function () {
-			logger.info('run reset quota');
-			Quota.reset(Quota.TYPE_GOOGLE, QUOTA_GOOGLE, function (err) {
-				if (err) {
-					logger.error(err);
-				}
-				run();
-			});
-		}, getTimeoutForMidnightPT());
-	})();
-	process.onStop(module.exports.stopWorker);
-};

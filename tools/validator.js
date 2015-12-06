@@ -62,7 +62,7 @@ mongooseValidator.noteValidator = [
 mongooseValidator.pubNameValidator = [
 	validate({
 		validator: 'isLength',
-		arguments: [ 2, 50 ],
+		arguments: [ 2, 200 ],
 		message: 'error.pub_name_wrong_format'
 	})
 ];

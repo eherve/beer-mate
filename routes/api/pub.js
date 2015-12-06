@@ -7,6 +7,7 @@ var NotFoundError = require('../../errors/notFoundError');
 var Auth = require('../../tools/auth');
 var ObjectId = require('mongoose').Types.ObjectId;
 var PubModel = require('../../models/pub');
+var RadarSearchModel = require('../../models/radarSearch');
 
 router.path = '/pubs';
 
@@ -40,7 +41,9 @@ function addBoxFilter(filters, query) {
 
 function addPolygonFilter(filters, query) {
   var polygon = [];
-  query.polygon.forEach(function(data) { polygon.push(JSON.parse(data)); });
+  query.polygon.forEach(function(data) {
+		polygon.push(JSON.parse(data));
+	});
   filters['address.loc'] = { $geoWithin: { $polygon: polygon } };
 }
 
@@ -76,10 +79,30 @@ function getFields(query) {
   return fields;
 }
 
+function getFieldsVersion(query) {
+	var fields = null;
+	if (query._v && query._v >= '1.1.0') {
+		fields = getFields(query);
+	} else {
+		fields = 'name address price priceHH currency createdAt updatedAt';
+		fields += query._v ? ' openPeriods' : ' days';
+	}
+	return fields;
+}
+
+function addFetchPub(query) {
+	RadarSearchModel.pushGoogle({ lng: query.SWLng, lat: query.SWlat });
+	RadarSearchModel.pushGoogle({ lng: query.NELng, lat: query.NElat });
+	RadarSearchModel.pushGoogle({ lng: query.NELng,
+		lat: query.SWlat - query.NElat });
+	RadarSearchModel.pushGoogle({ lng: query.SWLng - query.NELng,
+		lat: query.SWlat - query.NElat });
+}
+
 router.get('/', function(req, res, next) {
+	addFetchPub(req.query);
   var filters = getFilters(req.query);
-  var fields = 'name address price priceHH currency createdAt updatedAt';
-	fields += req.query._v ? ' openPeriods' : ' days';
+  var fields = getFieldsVersion(req.query);
 	PubModel.find(filters, fields, function(err, pubs) {
     if (err) { return next(err); }
     res.send(pubs);

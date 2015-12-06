@@ -57,7 +57,7 @@ var openPeriodSchema = new Schema({
 		day: { type: Number, validate: validator.mongoose.dayNumValidator },
 		hours: { type: Number, validate: validator.mongoose.hourValidator },
 		minutes: { type: Number, validate: validator.mongoose.minuteValidator }
-	},
+	}
 });
 
 var schema = new Schema({
@@ -86,14 +86,13 @@ var schema = new Schema({
 	openPeriods: [ openPeriodSchema ],
 	price: { type: Number },
 	priceHH: { type: Number },
-  currency: { type: String, required: true },
+  currency: { type: String },
   ratings: [ ratingSchema ],
   rating: { type: Number, min: 0, max: 5, mergeable: false },
   comments: [ commentSchema ],
   nbComments: { type: Number, min: 0, default: 0, mergeable: false },
   checkin: [ { type: Schema.Types.ObjectId, ref: 'Checkin' } ],
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true,
-    mergeable: false },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', mergeable: false },
   enabled: { type: Boolean, default: true, required: true, mergeable: false },
   validated: { type: Boolean, default: false, required: true,
     mergeable: false },

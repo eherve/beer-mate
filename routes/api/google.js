@@ -7,6 +7,7 @@ var NotFoundError = require('../../errors/notFoundError');
 var google = require('../../google');
 var Auth = require('../../tools/auth');
 var PubModel = require('../../models/pub');
+var RadarSearchModel = require('../../models/radarSearch');
 
 router.path = '/google';
 
@@ -73,6 +74,22 @@ router.get('/arround/:pubId', Auth.adminConnected, function(req, res, next) {
 				res.send({ pub: pub, match: data });
 			}
 		);
+	});
+});
+
+router.get('/radar-search', Auth.adminConnected, function(req, res, next) {
+	google.radarSearchGooglePub(req.query.lat, req.query.lng, req.query.radius,
+		function(err, data) {
+			if (err) { return next(err); }
+			res.send(data);
+		}
+	);
+});
+
+router.get('/run-insert-pubs', Auth.adminConnected, function(req, res, next) {
+	RadarSearchModel.pushGoogle(req.query, function(err) {
+		if (err) { return next(err); }
+		res.end();
 	});
 });
 

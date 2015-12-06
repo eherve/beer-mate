@@ -1,6 +1,7 @@
 'use strict';
 /* globals describe,it,beforeEach */
 
+var util = require('util');
 var assert = require('assert');
 var request = require('supertest');
 
@@ -19,8 +20,8 @@ describe('Pubs', function() {
 					.expect(200)
 					.end(function(err, res) {
 						assert.ifError(err);
-						assert.notEqual(res.body.length, 0);
-						pub = res.body[0];
+						assert(util.isArray(res.body));
+						if (res.body.length > 0) { pub = res.body[0]; }
 						done();
 					});
 			});
@@ -35,15 +36,19 @@ describe('Pubs', function() {
 			});
 		});
 		describe('GET /api/pubs/:id', function () {
-			it('should return the pub', function(done) {
+			it('should return the pub if exists', function(done) {
 				request(tools.HOSTNAME)
-					.get('/api/pubs/' + pub._id)
+					.get('/api/pubs/' + (pub ? pub._id : 'undefined'))
 					.set('Accept', 'application/json')
 					.expect('Content-Type', /json/)
-					.expect(200)
 					.end(function(err, res) {
 						assert.ifError(err);
-						assert.equal(res.body._id, pub._id, 'pub id mismatch');
+						if (pub !== undefined) {
+							assert.equal(res.status, 200);
+							assert.equal(res.body._id, pub._id, 'pub id mismatch');
+						} else {
+							assert.equal(res.status, 404);
+						}
 						done();
 					});
 			});
