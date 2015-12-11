@@ -1,14 +1,19 @@
 {
-    "port": 4242,
-    "session": {
-	"host": "sd-43627.dedibox.fr",
-	"port": 6379,
-	"options": {
-	    "auth_pass": "redisAdmin"
-	},
-	"prefix": ""
-    },
-    "google": {
-	"placeKey": "AIzaSyAzZYZkULE6-yPXUwvbZ1vwSTyLCnhBmmw"
-    }
+	"port": 4242,
+  "session": {
+		"host": "sd-43627.dedibox.fr",
+		"port": 6379,
+		"options": {
+			"auth_pass": "redisAdmin"
+		},
+		"prefix": ""
+  },
+  "google": {
+		"placeKeys": [
+    	"AIzaSyAzZYZkULE6-yPXUwvbZ1vwSTyLCnhBmmw",
+			"AIzaSyC96zY1qyZ7hcolTEX5rEiYlvFy_ytiE-k",
+			"AIzaSyB9u1WwyVjOg5_ReCqrzIem-UM8DxpCd_s"
+    ],
+		"radarSearch": true
+  }
 }
